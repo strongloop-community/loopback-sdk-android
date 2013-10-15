@@ -57,9 +57,9 @@ public class Widget extends Model { // This is a subclass, after all.
 }
 ```
 
-### Step 3: Model Prototype
+### Step 3: Model Repository
 
-The `ModelPrototype` is the LoopBack Android SDK's
+The `ModelRepository` is the LoopBack Android SDK's
 placeholder for what in Node is a JavaScript prototype representing
 a specific "type" of Model on the server. In our example, this would be the
 model exposed as "widget" (or similar) on the server:
@@ -84,8 +84,8 @@ Since `ModelRepository` provides a basic implementation, we only need to
 override its constructor to provide the appropriate name.
 
 ```java
-public class WidgetPrototype extends ModelPrototype<Widget> {
-    public WidgetPrototype() {
+public class WidgetRepository extends ModelRepository<Widget> {
+    public WidgetRepository() {
         super("widget", Widget.class);
     }
 }
@@ -103,20 +103,20 @@ RestAdapter adapter = new RestAdapter("http://myserver:3000");
 **Remember:** Replace `"http://myserver:3000"` with the complete URL to your
 server.
 
-Once we have that adapter, we can create our Prototype instance.
+Once we have that adapter, we can create our Repository instance.
 
 ```java
-WidgetPrototype prototype = adapter.createPrototype(WidgetPrototype.class);
+WidgetRepository repository = adapter.createRepository(WidgetRepository.class);
 ```
 
 ### Step 6: Profit!
 
-Now that we have a `WidgetPrototype` instance, we can:
+Now that we have a `WidgetRepository` instance, we can:
 
  - Create a `Widget`
 
 ```java
-Widget pencil = prototype.createModel(ImmutableMap.of("name", "Pencil"));
+Widget pencil = repository.createModel(ImmutableMap.of("name", "Pencil"));
 pencil.price = new BigDecimal("1.50");
 ```
 
@@ -138,7 +138,7 @@ pencil.save(new Model.Callback() {
  - Find another `Widget`
 
 ```java
-prototype.findById(2, new ModelPrototype.FindCallback<Widget>() {
+repository.findById(2, new ModelRepository.FindCallback<Widget>() {
     @Override
     public void onSuccess(Widget widget) {
         // found!

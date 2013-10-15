@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.strongloop.android.remoting.Prototype;
+import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
 
@@ -26,9 +26,9 @@ public class Model extends VirtualObject {
     private Object id;
     private Map<String, Object> overflow = new HashMap<String, Object>();
 
-    public Model(Prototype prototype,
+    public Model(Repository repository,
             Map<String, ? extends Object> creationParameters) {
-        super(prototype, creationParameters);
+        super(repository, creationParameters);
     }
 
     public Model() {

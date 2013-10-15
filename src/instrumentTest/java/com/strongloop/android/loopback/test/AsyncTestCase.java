@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 import android.test.ActivityTestCase;
 
-import com.strongloop.android.loopback.ModelPrototype;
+import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
 
@@ -87,7 +87,7 @@ public class AsyncTestCase extends ActivityTestCase {
         assertTrue(success);
     }
 
-    public JSONObject fetchJsonObjectById(final ModelPrototype<?> prototype, final Object id)
+    public JSONObject fetchJsonObjectById(final ModelRepository<?> repository, final Object id)
             throws Throwable {
         final JSONObject[] remoteObject = new JSONObject[1];
 
@@ -96,7 +96,7 @@ public class AsyncTestCase extends ActivityTestCase {
             public void run() {
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put("id", id);
-                prototype.invokeStaticMethod("findById", params, new Adapter.JsonObjectCallback() {
+                repository.invokeStaticMethod("findById", params, new Adapter.JsonObjectCallback() {
                     @Override
                     public void onError(Throwable t) {
                         notifyFailed(t);

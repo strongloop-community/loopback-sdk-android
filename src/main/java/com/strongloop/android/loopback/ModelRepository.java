@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import org.atteo.evo.inflector.English;
 
 import com.strongloop.android.remoting.JsonUtil;
-import com.strongloop.android.remoting.Prototype;
+import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
@@ -23,7 +23,7 @@ import com.strongloop.android.remoting.adapters.RestContractItem;
  * the name of the model type for easy {@link Model} creation, discovery, and
  * management.
  */
-public class ModelPrototype<T extends Model> extends Prototype {
+public class ModelRepository<T extends Model> extends Repository {
 
     public interface FindCallback<T extends Model> {
         public void onSuccess(T model);
@@ -38,29 +38,29 @@ public class ModelPrototype<T extends Model> extends Prototype {
     private Class<T> modelClass;
     private String nameForRestUrl;
 
-    public ModelPrototype(String className) {
+    public ModelRepository(String className) {
         this(className, null);
     }
 
     /**
-     * Creates a new Prototype, associating it with the named remote class.
+     * Creates a new Repository, associating it with the named remote class.
      * @param className The remote class name.
      * @param modelClass The Model class. It must have a public no-argument
      * constructor.
      */
-    public ModelPrototype(String className, Class<T> modelClass) {
+    public ModelRepository(String className, Class<T> modelClass) {
       this(className, null, modelClass);
     }
 
     /**
-     * Creates a new Prototype, associating it with the named remote class.
+     * Creates a new Repository, associating it with the named remote class.
      * @param className The remote class name.
      * @param nameForRestUrl The pluralized class name to use in REST transport.
      * @param modelClass The Model class. It must have a public no-argument
      * constructor.
      */
     @SuppressWarnings("unchecked")
-    public ModelPrototype(String className, String nameForRestUrl, Class<T> modelClass) {
+    public ModelRepository(String className, String nameForRestUrl, Class<T> modelClass) {
         super(className);
 
         this.nameForRestUrl = nameForRestUrl != null
@@ -119,7 +119,7 @@ public class ModelPrototype<T extends Model> extends Prototype {
             ex.initCause(e);
             throw ex;
         }
-        model.setPrototype(this);
+        model.setRepository(this);
         model.setCreationParameters(parameters);
         model.putAll(parameters);
         BeanUtil.setProperties(model, parameters, true);

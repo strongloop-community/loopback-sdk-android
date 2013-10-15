@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.RestAdapter;
-import com.strongloop.android.loopback.ModelPrototype;
+import com.strongloop.android.loopback.ModelRepository;
 
 import org.json.JSONObject;
 
@@ -39,14 +39,14 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
     }
 
-    public static class WidgetPrototype extends ModelPrototype<Widget> {
+    public static class WidgetRepository extends ModelRepository<Widget> {
 
-        public WidgetPrototype() {
+        public WidgetRepository() {
             super("widget", Widget.class);
         }
     }
 
-    private WidgetPrototype prototype;
+    private WidgetRepository widgetRepository;
 
     @Override
     protected void setUp() throws Exception {
@@ -55,7 +55,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
         // host computer.
         RestAdapter adapter = new RestAdapter(getActivity(),
                 "http://10.0.2.2:3000");
-        prototype = adapter.createPrototype(WidgetPrototype.class);
+        widgetRepository = adapter.createRepository(WidgetRepository.class);
     }
 
     public void testCreateAndRemove() throws Throwable {
@@ -65,7 +65,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
         params.put("name", "Foobar");
         params.put("bars", 1);
 
-        final Widget model = prototype.createModel(params);
+        final Widget model = widgetRepository.createModel(params);
 
         assertEquals("Foobar", model.getName());
         assertEquals(1, model.getBars());
@@ -95,7 +95,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
         });
         assertNotNull(lastId[0]);
 
-        JSONObject remoteJson = fetchJsonObjectById(prototype, lastId[0]);
+        JSONObject remoteJson = fetchJsonObjectById(widgetRepository, lastId[0]);
         assertNotNull(remoteJson);
         assertPropertyNames(remoteJson, "id", "name", "bars");
 
@@ -103,8 +103,8 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findById(lastId[0],
-                        new ModelPrototype.FindCallback<Widget>() {
+                widgetRepository.findById(lastId[0],
+                        new ModelRepository.FindCallback<Widget>() {
 
                     @Override
                     public void onSuccess(Widget model) {
@@ -139,7 +139,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findById(2, new ModelPrototype.FindCallback<Widget>() {
+                widgetRepository.findById(2, new ModelRepository.FindCallback<Widget>() {
 
                     @Override
                     public void onSuccess(Widget model) {
@@ -165,7 +165,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findAll(new ModelPrototype.FindAllCallback<Widget>() {
+                widgetRepository.findAll(new ModelRepository.FindAllCallback<Widget>() {
 
                     @Override
                     public void onSuccess(List<Widget> list) {
@@ -198,8 +198,8 @@ public class ModelSubclassingTest extends AsyncTestCase {
     public void testUpdate() throws Throwable {
         doAsyncTest(new AsyncTest() {
 
-            ModelPrototype.FindCallback<Widget> verify =
-                    new ModelPrototype.FindCallback<Widget>() {
+            ModelRepository.FindCallback<Widget> verify =
+                    new ModelRepository.FindCallback<Widget>() {
 
                 @Override
                 public void onSuccess(Widget model) {
@@ -236,7 +236,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
                 @Override
                 public void onSuccess() {
-                    prototype.findById(2, verify);
+                    widgetRepository.findById(2, verify);
                 }
 
                 @Override
@@ -246,8 +246,8 @@ public class ModelSubclassingTest extends AsyncTestCase {
                 }
             };
 
-            ModelPrototype.FindCallback<Widget> update =
-                    new ModelPrototype.FindCallback<Widget>() {
+            ModelRepository.FindCallback<Widget> update =
+                    new ModelRepository.FindCallback<Widget>() {
 
                 @Override
                 public void onSuccess(Widget model) {
@@ -265,7 +265,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findById(2, update);
+                widgetRepository.findById(2, update);
             }
         });
     }

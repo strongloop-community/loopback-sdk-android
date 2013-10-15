@@ -18,63 +18,63 @@ public class RestAdapter
     }
 
     /**
-     * Creates a new {@link ModelPrototype} representing the named model type.
+     * Creates a new {@link ModelRepository} representing the named model type.
      * @param name The model name.
-     * @return A new prototype instance.
+     * @return A new repository instance.
      */
-    public ModelPrototype<Model> createPrototype(String name) {
-        return createPrototype(name, null, null);
+    public ModelRepository<Model> createRepository(String name) {
+        return createRepository(name, null, null);
     }
 
     /**
-     * Creates a new {@link ModelPrototype} representing the named model type.
+     * Creates a new {@link ModelRepository} representing the named model type.
      * @param name The model name.
      * @param nameForRestUrl The model name to use in REST URL, usually the plural form of `name`.
-     * @return A new prototype instance.
+     * @return A new repository instance.
      */
-    public ModelPrototype<Model> createPrototype(String name, String nameForRestUrl) {
-        return createPrototype(name, nameForRestUrl, null);
+    public ModelRepository<Model> createRepository(String name, String nameForRestUrl) {
+        return createRepository(name, nameForRestUrl, null);
     }
 
     /**
-     * Creates a new {@link ModelPrototype} representing the named model type.
+     * Creates a new {@link ModelRepository} representing the named model type.
      * @param name The model name.
      * @param nameForRestUrl The model name to use in REST URL, usually the plural form of `name`.
      * @param modelClass The model class. The class must have a public
      * no-argument constructor.
-     * @return A new prototype instance.
+     * @return A new repository instance.
      */
-    public <T extends Model> ModelPrototype<T> createPrototype(String name,
-                                             String nameForRestUrl,
-                                             Class<T> modelClass) {
-        ModelPrototype<T> prototype = new ModelPrototype<T>(name, nameForRestUrl, modelClass);
-        attachPrototype(prototype);
-        return prototype;
+    public <T extends Model> ModelRepository<T> createRepository(String name,
+                                               String nameForRestUrl,
+                                               Class<T> modelClass) {
+        ModelRepository<T> repository = new ModelRepository<T>(name, nameForRestUrl, modelClass);
+        attachModelRepository(repository);
+        return repository;
     }
 
     /**
-     * Creates a new {@link ModelPrototype} from the given subclass.
-     * @param prototypeClass A subclass of {@link ModelPrototype} to use.
+     * Creates a new {@link ModelRepository} from the given subclass.
+     * @param repositoryClass A subclass of {@link ModelRepository} to use.
      * The class must have a public no-argument constructor.
-     * @return A new prototype instance.
+     * @return A new repository instance.
      */
-    public <U extends ModelPrototype> U createPrototype(
-            Class<U> prototypeClass) {
-        U prototype = null;
+    public <U extends ModelRepository> U createRepository(
+            Class<U> repositoryClass) {
+        U repository = null;
         try {
-            prototype = prototypeClass.newInstance();
+            repository = repositoryClass.newInstance();
         }
         catch (Exception e) {
             IllegalArgumentException ex = new IllegalArgumentException();
             ex.initCause(e);
             throw ex;
         }
-        attachPrototype(prototype);
-        return prototype;
+        attachModelRepository(repository);
+        return repository;
     }
 
-    private void attachPrototype(ModelPrototype prototype) {
-        getContract().addItemsFromContract(prototype.createContract());
-        prototype.setAdapter(this);
+    private void attachModelRepository(ModelRepository repository) {
+        getContract().addItemsFromContract(repository.createContract());
+        repository.setAdapter(this);
     }
 }

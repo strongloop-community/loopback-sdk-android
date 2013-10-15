@@ -77,7 +77,7 @@
     <orderEntry type="library" exported="" name="android-async-http-1.4.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="guava-15.0" level="project" />
     <orderEntry type="library" exported="" name="evo-inflector-1.0.1" level="project" />
-    <orderEntry type="library" exported="" name="strong-remoting-android-0.1.0" level="project" />
+    <orderEntry type="library" exported="" name="strong-remoting-android-0.2.0" level="project" />
   </component>
 </module>
 
