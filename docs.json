@@ -1,0 +1,10 @@
+{
+  "assets": {
+    "/img": "docs/img"
+  },
+  "content": [
+    "README.md",
+    "docs/GettingStarted.md",
+    "docs/Subclassing.md"
+  ]
+}
