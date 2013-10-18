@@ -1,16 +1,23 @@
 group = 'com.strongloop';
-version = '0.1.0'
+version = '0.1.0-SNAPSHOT'
 
 buildscript {
   repositories {
       mavenCentral()
   }
   dependencies {
-      classpath 'com.android.tools.build:gradle:0.5.+'
+      // Note: 0.5.5 changed the way how tasks are initialized
+      // The new way makes it impossible to configure Javadoc artifact
+      // for the maven-publish plugin. We have to stay with 0.5.4 for now.
+      // See also the discussion in adt-dev: http://bit.ly/17IOTvG
+      classpath 'com.android.tools.build:gradle:0.5.4'
+      classpath 'org.apache.commons:commons-io:1.3.2'
+
   }
 }
 
 apply plugin: 'android-library'
+apply plugin: 'maven-publish'
 
 repositories {
     mavenLocal()
@@ -29,7 +36,7 @@ android {
 
 dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
-    compile 'com.strongloop:strong-remoting-android:0.1.0+'
+    compile 'com.strongloop:strong-remoting-android:0.1.0-SNAPSHOT'
     instrumentTestCompile 'com.google.guava:guava:15.0'
 }
 
@@ -46,35 +53,97 @@ task androidReleaseJar(type: Jar, dependsOn: assembleRelease) {
     from "$buildDir/classes/release/"
 }
 
-/* TODO
-task androidJavadocsJar(type: Jar) {
+task androidJavadocsJar(type: Jar, dependsOn: generateReleaseJavadoc) {
     classifier = 'javadoc'
-    from tasks["generateReleaseJavadoc"].destinationDir
+    from generateReleaseJavadoc.destinationDir
 }
-*/
 
 task androidSourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.allSource
 }
 
+task distProperties() { doLast {
+    new File(androidReleaseJar.archivePath.absolutePath + '.properties').withWriter { w ->
+      w.println('src=src/' + androidSourcesJar.archiveName)
+      w.println('doc=docs/' + androidJavadocsJar.archiveName)
+    }
+
+    // hack: create properties file for strong-remoting-android
+    configurations.compile.resolve().each { dep ->
+        if (dep.name.startsWith('strong-remoting-android')) {
+            new File(dep.absolutePath + '.properties').withWriter { w ->
+                def baseName = org.apache.commons.io.FilenameUtils.getBaseName(dep.absolutePath)
+                w.println('src=src/' + baseName + '-sources.jar')
+                w.println('doc=docs/' + baseName + '-javadoc.jar')
+            }
+        }
+    }
+} }
+
+// Structure based on
+// http://stackoverflow.com/questions/9873152/how-to-attach-javadoc-or-sources-to-jars-in-libs-folder
+task dist(type: Zip, dependsOn: [
+  androidReleaseJar,
+  androidJavadocsJar,
+  androidSourcesJar,
+  distProperties]) {
+    from(androidReleaseJar.archivePath)
+    from(androidReleaseJar.archivePath.absolutePath + '.properties')
+
+    // bundle in dependencies
+    configurations.compile.resolve().each { dep ->
+        // exclude jars from Android SDK
+        if (dep.absolutePath.contains('/com/android/')) return
+
+        from (dep.absolutePath)
+
+        // include -sources and -docs for strong-remoting-android
+        if (dep.name.startsWith('strong-remoting-android')) {
+            def baseName = org.apache.commons.io.FilenameUtils.getBaseName(dep.absolutePath)
+            from(dep.absolutePath + '.properties')
+            into('src') {
+              from(new File(dep.parent, baseName + '-sources.jar'))
+            }
+            into('docs') {
+              from(new File(dep.parent, baseName + '-javadoc.jar'))
+            }
+        }
+    }
+
+    into('src') {
+        from(androidSourcesJar.archivePath)
+    }
+    into('docs') {
+        from(androidJavadocsJar.archivePath)
+    }
+}
+
 artifacts {
     archives androidReleaseJar
     archives androidSourcesJar
-/* TODO
     archives androidJavadocsJar
-*/
+    archives dist
 }
 
-
-apply plugin: 'maven-publish'
 publishing {
     publications {
         maven(MavenPublication) {
             artifact androidReleaseJar
 
+            artifact androidSourcesJar {
+                classifier 'sources'
+            }
+
+            artifact androidJavadocsJar {
+                classifier 'javadoc'
+            }
+
             pom.withXml {
                 def root = asNode()
+
+                root.appendNode('packaging', 'jar');
+
                 def deps = new Node(root, 'dependencies')
                 configurations.compile.allDependencies.each { dep ->
                     def node = new Node(deps, 'dependency')
@@ -82,6 +151,29 @@ publishing {
                     new Node(node, 'artifactId', dep.name)
                     new Node(node, 'version', dep.version);
                 }
+
+                root.appendNode('name', 'loopback-android')
+                root.appendNode('description', 'Android client for LoopBack')
+                root.appendNode('url', 'https://github.com/strongloop/loopback-android')
+
+                def licenses = new Node(root, 'licenses');
+                def lic = new Node(licenses, 'license');
+                lic.appendNode('name', 'The MIT License')
+                lic.appendNode('url', 'http://opensource.org/licenses/mit-license.php')
+                lic.appendNode('distribution', 'repo')
+
+                def scm = new Node(root, 'scm')
+                scm.appendNode('connection', 'scm:git@github.com:strongloop/loopback-android.git')
+                scm.appendNode('developerConnection', 'scm:git@github.com:strongloop/loopback-android.git')
+                scm.appendNode('url', 'https://github.com/strongloop/loopback-android')
+
+                def devs = new Node(root, 'developers')
+                def dev1 = new Node(devs, 'developer')
+                dev1.appendNode('id', 'bajtos')
+                dev1.appendNode('name', 'Miroslav Bajtos')
+                dev1.appendNode('email', 'miroslav@strongloop.com')
+                dev1.appendNode('organization', 'StrongLoop')
+                dev1.appendNode('organizationUrl', 'http://strongloop.com/')
             }
         }
     }
