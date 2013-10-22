@@ -3,7 +3,7 @@ package com.strongloop.android.loopback.test;
 import android.util.Log;
 
 import com.strongloop.android.loopback.Model;
-import com.strongloop.android.loopback.ModelAdapter;
+import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.ModelPrototype;
 
 import org.json.JSONObject;
@@ -17,14 +17,14 @@ import static com.strongloop.android.loopback.test.TestHelpers.assertPropertyNam
 public class ModelTest extends AsyncTestCase {
 
     private ModelPrototype<Model> prototype;
-    private ModelAdapter<Model> adapter;
+    private RestAdapter adapter;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
         // host computer.
-        adapter = new ModelAdapter<Model>(getActivity(),  "http://10.0.2.2:3000");
+        adapter = new RestAdapter(getActivity(),  "http://10.0.2.2:3000");
         prototype = adapter.createPrototype("widget");
     }
 
