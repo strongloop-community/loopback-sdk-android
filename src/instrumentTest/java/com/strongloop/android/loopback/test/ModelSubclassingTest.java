@@ -3,7 +3,7 @@ package com.strongloop.android.loopback.test;
 import android.util.Log;
 
 import com.strongloop.android.loopback.Model;
-import com.strongloop.android.loopback.ModelAdapter;
+import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.ModelPrototype;
 
 import org.json.JSONObject;
@@ -53,7 +53,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
         super.setUp();
         // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
         // host computer.
-        ModelAdapter<Widget> adapter = new ModelAdapter<Widget>(getActivity(),
+        RestAdapter adapter = new RestAdapter(getActivity(),
                 "http://10.0.2.2:3000");
         prototype = adapter.createPrototype(WidgetPrototype.class);
     }

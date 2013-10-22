@@ -4,15 +4,16 @@ package com.strongloop.android.loopback;
 
 import android.content.Context;
 
-import com.strongloop.android.remoting.adapters.RestAdapter;
-
 /**
- * An extension to the vanilla {@link RestAdapter} to make working with
+ * An extension to the vanilla
+ * {@link com.strongloop.android.remoting.adapters.RestAdapter}
+ * to make working with
  * {@link Model}s easier.
  */
-public class ModelAdapter<T extends Model> extends RestAdapter {
+public class RestAdapter
+        extends com.strongloop.android.remoting.adapters.RestAdapter {
 
-    public ModelAdapter(Context context, String url) {
+    public RestAdapter(Context context, String url) {
         super(context, url);
     }
 
@@ -21,7 +22,7 @@ public class ModelAdapter<T extends Model> extends RestAdapter {
      * @param name The model name.
      * @return A new prototype instance.
      */
-    public ModelPrototype<T> createPrototype(String name) {
+    public ModelPrototype<Model> createPrototype(String name) {
         return createPrototype(name, null, null);
     }
 
@@ -31,7 +32,7 @@ public class ModelAdapter<T extends Model> extends RestAdapter {
      * @param nameForRestUrl The model name to use in REST URL, usually the plural form of `name`.
      * @return A new prototype instance.
      */
-    public ModelPrototype<T> createPrototype(String name, String nameForRestUrl) {
+    public ModelPrototype<Model> createPrototype(String name, String nameForRestUrl) {
         return createPrototype(name, nameForRestUrl, null);
     }
 
@@ -43,7 +44,7 @@ public class ModelAdapter<T extends Model> extends RestAdapter {
      * no-argument constructor.
      * @return A new prototype instance.
      */
-    public ModelPrototype<T> createPrototype(String name,
+    public <T extends Model> ModelPrototype<T> createPrototype(String name,
                                              String nameForRestUrl,
                                              Class<T> modelClass) {
         ModelPrototype<T> prototype = new ModelPrototype<T>(name, nameForRestUrl, modelClass);
@@ -57,7 +58,7 @@ public class ModelAdapter<T extends Model> extends RestAdapter {
      * The class must have a public no-argument constructor.
      * @return A new prototype instance.
      */
-    public <U extends ModelPrototype<T>> U createPrototype(
+    public <U extends ModelPrototype> U createPrototype(
             Class<U> prototypeClass) {
         U prototype = null;
         try {
@@ -72,7 +73,7 @@ public class ModelAdapter<T extends Model> extends RestAdapter {
         return prototype;
     }
 
-    private void attachPrototype(ModelPrototype<T> prototype) {
+    private void attachPrototype(ModelPrototype prototype) {
         getContract().addItemsFromContract(prototype.createContract());
         prototype.setAdapter(this);
     }
