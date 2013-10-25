@@ -72,7 +72,7 @@ independent of the Guide Application.
     RestAdapter adapter = new RestAdapter("http://example.com");
     ```
 
-    - This `RestAdapter` provides the starting point for all our interactions
+    This `RestAdapter` provides the starting point for all our interactions
     with the running and anxiously waiting server.
 
  1. Once we have access to `adapter` (for the sake of example, we'll assume the
@@ -86,7 +86,7 @@ independent of the Guide Application.
                     ImmutableMap.of("name", "Awesome Pen"));
     ```
 
-    - All the normal, magical `Model` and `ModelPrototype` methods (e.g.
+    All the normal, magical `Model` and `ModelPrototype` methods (e.g.
     `create`, `destroy`, `findById`) are now available through
     `productPrototype` and `pen`!
 
