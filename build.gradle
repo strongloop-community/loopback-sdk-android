@@ -22,6 +22,9 @@ apply plugin: 'maven-publish'
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        url "http://artifactory.strongloop.com:8081/artifactory/repo/"
+    }
 }
 
 android {
