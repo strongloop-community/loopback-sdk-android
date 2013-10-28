@@ -1,10 +1,9 @@
 # LoopBack Android SDK
 
-The Android SDK for the [LoopBack](http://docs.strongloop.com/loopback)
-framework obviates the need for using the clunky
-`AsyncHttpClient`, `JSONObject` and similar interfaces to interact with
-a LoopBack-based backend, albeit RESTful. Instead, interact with
-your Models and Data Sources in a comfortable, first-class, native manner.
+The Android SDK provides simple API calls that enable your Android app to access a [LoopBack](http://docs.strongloop.com/loopback) server application.  
+It enables you to interact with your models and data sources in a comfortable, first-class, native manner instead 
+of using the clunky `AsyncHttpClient`, `JSONObject`, and similar interfaces.
+
 
 For more information:
 
