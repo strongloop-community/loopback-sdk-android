@@ -3,25 +3,26 @@
 Once you've got your LoopBack-powered backend running, it's time to integrate
 it with your mobile application.
 
-### Requirements
+### Prerequisites
 
+Before you start, make sure you have:
 
- * [Eclipse Android Development Tools](http://developer.android.com/sdk/index.html)
- * Android SDK components (open Tools &gt; Android &gt; SDK Manager to install)
-   * Tools &gt; Android SDK Platform-tools 18.1.0
-   * Tools &gt; Android SDK Build-tools 18.1.0
-   * Android 4.3 (API 18) &gt; SDK Platform
-   * Extras &gt; Android Support Repository
-   * Extras &gt; Android Support Library
- * For on-device testing, an Android device with Android 4 or higher
+ * [Eclipse Android Development Tools](http://developer.android.com/sdk/index.html).
+ * Android SDK components (open Tools &gt; Android &gt; SDK Manager to install).
+   * Tools &gt; Android SDK Platform-tools 18.1.0.
+   * Tools &gt; Android SDK Build-tools 18.1.0.
+   * Android 4.3 (API 18) &gt; SDK Platform.
+   * Extras &gt; Android Support Repository.
+   * Extras &gt; Android Support Library.
+ * For on-device testing, an Android device with Android 4 or higher.
  * A LoopBack-powered server application (For example, the StrongLoop Suite
-   Example App. [More information here.](http://docs.strongloop.com))
+   Example App. [More information here.](http://docs.strongloop.com)).
 
-### Guided: Get Started with the Guide Application
+### Geting Started with the Guide Application
 
 The easiest way to get started with the LoopBack Android SDK
-is with the LoopBack Android Guide Application. The Guide Application comes
-ready to compile with Android Studio and each Tab in the Application
+is with the LoopBack Android guide application. The guide application comes
+ready to compile with Android Studio and each tab in the application
 will guide you through the features available to mobile applications through
 the SDK.
 
@@ -32,40 +33,40 @@ the SDK.
 
 From your usual projects directory:
 
- 1. Download the LoopBack Guide Application to your local machine from
+ 1. Download the LoopBack guide application to your local machine from
  [GitHub](https://github.com/strongloop/loopback-android-getting-started).
 
     ```sh
     git clone git@github.com:strongloop/loopback-android-getting-started.git
     ```
 
- 1. Open ADT Eclipse
+ 1. Open ADT Eclipse.
 
- 1. Import the Loopback Guide Application to your workspace
+ 1. Import the Loopback Guide Application to your workspace.
 
  1. Start the Application. Each tab (fragment) shows a different way
-    how to interact with the LoopBack server.
+    to interact with the LoopBack server.
     Look at source code of fragments to see implementation details.
 
-### DIY: Get started with the LoopBack SDK
+### Getting started with the LoopBack SDK
 
 If you are creating a new Android application or want to integrate an existing
-application with LoopBack you'll want to use the LoopBack SDK directly
-independent of the Guide Application.
+application with LoopBack, you'll want to use the LoopBack SDK 
+independently of the guide application.
 
  1. Open the ADT project you want to use with LoopBack, or
     create a new one.
 
- 1. Open the SDKs folder of the distro:
+ 1. Open the SDKs folder of the distribution:
 
     ```sh
     open /usr/local/share/strongloop-node/strongloop/sdks/loopback-android-sdk
     ```
 
- 1. Drag all files and folder from the new Finder window into `libs` folder
+ 1. Drag all files and folders from the new Finder window into `libs` folder
     of your ADT application.
 
- 1. Somewhere, we're going to need an Adapter to tell the SDK where to find our
+ 1. Somewhere, we're going to need an adapter to tell the SDK where to find our
  server:
 
     ```java
