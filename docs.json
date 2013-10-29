@@ -1,6 +1,7 @@
 {
   "assets": {
-    "/img": "docs/img"
+    "/img": "docs/img",
+    "/api": "docs/api"
   },
   "content": [
     "README.md",

@@ -53,6 +53,11 @@ task androidReleaseJar(type: Jar, dependsOn: assembleRelease) {
     from "$buildDir/classes/release/"
 }
 
+task updateApiDocs(type: Copy, dependsOn: generateReleaseJavadoc) {
+    from generateReleaseJavadoc.destinationDir
+    into 'docs/api'
+}
+
 task androidJavadocsJar(type: Jar, dependsOn: generateReleaseJavadoc) {
     classifier = 'javadoc'
     from generateReleaseJavadoc.destinationDir
