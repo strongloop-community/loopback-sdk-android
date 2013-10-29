@@ -34,6 +34,12 @@ android {
     }
 }
 
+println 'dumping repositories'
+repositories.all { r ->
+  println r.name + ': ' + r.url
+}
+println '--end--'
+
 dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
     compile 'com.strongloop:strong-remoting-android:0.1.0-SNAPSHOT'
