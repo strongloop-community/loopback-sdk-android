@@ -1,5 +1,4 @@
 group = 'com.strongloop';
-version = '0.2.0-SNAPSHOT'
 
 buildscript {
   repositories {
