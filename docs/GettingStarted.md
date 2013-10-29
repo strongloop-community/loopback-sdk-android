@@ -7,7 +7,7 @@ it with your mobile application.
 
 Before you start, make sure you have:
 
- * [Eclipse Android Development Tools](http://developer.android.com/sdk/index.html).
+ * [Eclipse Android Development Tools](http://developer.android.com/sdk/index.html) (ADT).
  * Android SDK components (open Tools &gt; Android &gt; SDK Manager to install).
    * Tools &gt; Android SDK Platform-tools 18.1.0.
    * Tools &gt; Android SDK Build-tools 18.1.0.
@@ -51,13 +51,13 @@ From your usual projects directory:
 ### Getting started with the LoopBack SDK
 
 If you are creating a new Android application or want to integrate an existing
-application with LoopBack, you'll want to use the LoopBack SDK 
+application with LoopBack, then use the LoopBack SDK 
 independently of the guide application.
 
  1. Open the ADT project you want to use with LoopBack, or
     create a new one.
 
- 1. Open the SDKs folder of the distribution:
+ 1. Open the `/sdks` folder of the distribution:
 
     ```sh
     open /usr/local/share/strongloop-node/strongloop/sdks/loopback-android-sdk
@@ -74,7 +74,7 @@ independently of the guide application.
     ```
 
     This `RestAdapter` provides the starting point for all our interactions
-    with the running and anxiously waiting server.
+    with the running server.
 
  1. Once we have access to `adapter` (for the sake of example, we'll assume the
  Adapter is available through our Fragment subclass), we can create
@@ -87,11 +87,11 @@ independently of the guide application.
                     ImmutableMap.of("name", "Awesome Pen"));
     ```
 
-    All the normal, magical `Model` and `ModelPrototype` methods (e.g.
+    All the normal, magical `Model` and `ModelPrototype` methods (for example,
     `create`, `destroy`, `findById`) are now available through
     `productPrototype` and `pen`!
 
- 1. Go forth and develop! Check out the [API docs](ios/api) or create more
+ 1. Go forth and develop! Check out the [API docs](http://docs.strongloop.com/loopback-android/api/index.html) or create more
  Models with the LoopBack [CLI](http://docs.strongloop.com/loopback#model) or
  [Node API](http://docs.strongloop.com/loopback#a-simple-example).
 
