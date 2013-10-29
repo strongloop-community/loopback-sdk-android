@@ -24,3 +24,19 @@ for general conventions on bug reporting, coding style and pull request flow.
    local Maven cache. This will way you can test the changes in your
    application and/or other modules before publishing an official version.
 
+## Update the auto-generated API javadoc
+
+Follow these steps to update the API documentation at http://docs.strongloop.com:
+
+ 1. Update javadoc files
+
+        $ ./gradlew updateApiDocs
+
+ 1. Commit your changes to git
+
+        $ git add docs/api
+        $ git commit
+        # enter commit message
+        $ git push
+
+ 1. Submit a GitHub pull request
