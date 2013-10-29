@@ -40,10 +40,26 @@ dependencies {
     instrumentTestCompile 'com.google.guava:guava:15.0'
 }
 
+task unpackRemotingJavadoc(type: Copy) {
+    // find dependency named 'strong-remoting-android'
+    configurations.compile.resolve().each { dep ->
+      if (dep.name.startsWith('strong-remoting-android')) {
+        def fullPath = org.apache.commons.io.FilenameUtils.getFullPath(dep.absolutePath)
+        def baseName = org.apache.commons.io.FilenameUtils.getBaseName(dep.absolutePath)
+        // add all java files from strong-remoting-android-{version}-sources.jar
+        from zipTree(fullPath + baseName + '-sources.jar')
+      }
+    }
+    into 'build/source/strong-remoting-android'
+}
+
 android.libraryVariants.all { variant ->
-    task("generate${variant.name}Javadoc", type: Javadoc) {
+    task("generate${variant.name}Javadoc", type: Javadoc, dependsOn: unpackRemotingJavadoc) {
         description "Generates Javadoc for $variant.name."
-        source = variant.javaCompile.source
+        source variant.javaCompile.source
+        source fileTree('build/source/strong-remoting-android').matching {
+          include '**/*.java'
+        }
         ext.androidJar = "${android.plugin.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
         classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
     }
