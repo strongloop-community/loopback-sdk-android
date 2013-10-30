@@ -37,34 +37,34 @@ android {
 }
 
 configurations {
-    includeJavadocs
-    includeSources
+    subJavadocs
+    subSources
 }
 
 dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
 
     def strongRemoting = 'com.strongloop:strong-remoting-android:0.1.0-SNAPSHOT'
-    compile strongRemoting
-    includeJavadocs strongRemoting + ':javadoc'
-    includeSources strongRemoting + ':sources'
+    compile strongRemoting + '@jar'
+    subJavadocs strongRemoting + ':javadoc'
+    subSources strongRemoting + ':sources'
 
     instrumentTestCompile 'com.google.guava:guava:15.0'
 }
 
 task unpackJavadocIncludes(type: Copy) {
     // unpack all source dependencies
-    configurations.includeSources.resolve().each { dep ->
+    configurations.subSources.resolve().each { dep ->
         from zipTree(dep.absolutePath)
     }
-    into 'build/source/javadoc-deps'
+    into 'build/javadoc-sources'
 }
 
 android.libraryVariants.all { variant ->
     task("generate${variant.name}Javadoc", type: Javadoc, dependsOn: unpackJavadocIncludes) {
         description "Generates Javadoc for $variant.name."
         source variant.javaCompile.source
-        source fileTree('build/source/javadoc-deps').matching {
+        source fileTree('build/javadoc-sources').matching {
           include '**/*.java'
         }
         ext.androidJar = "${android.plugin.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
@@ -133,13 +133,13 @@ task dist(type: Zip, dependsOn: [
         }
     }
 
-    configurations.includeJavadocs.resolve().each { dep ->
+    configurations.subJavadocs.resolve().each { dep ->
       into('docs') {
           from(dep.absolutePath)
       }
     }
 
-    configurations.includeSources.resolve().each { dep ->
+    configurations.subSources.resolve().each { dep ->
       into('src') {
           from(dep.absolutePath)
       }
@@ -212,3 +212,16 @@ publishing {
         }
     }
 }
+
+task printCompilerInput << {
+  println "javac input files"
+  compileRelease.source.each {
+    println '  ' + it.absolutePath
+  }
+  println "javac classpath"
+  compileRelease.classpath.each {
+    println '  ' + it.absolutePath
+  }
+}
+
+compileRelease.dependsOn printCompilerInput
