@@ -20,6 +20,9 @@ for general conventions on bug reporting, coding style and pull request flow.
      select "Run All Tests"
    * Add an emulator configuration in AVD manager (you will do this only once)
    * Watch the tests pass.
+ * Run the Gradle task `dist` to create a ZIP archive containing all JARs
+   needed for using LoopBack Android SDK in an Eclipse ADT project. The archive
+   will be created in `build/distributions/`.
  * Run the Gradle task `publishToMavenLocal` to publish artefacts to your
    local Maven cache. This will way you can test the changes in your
    application and/or other modules before publishing an official version.
