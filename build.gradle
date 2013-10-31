@@ -46,8 +46,8 @@ dependencies {
 
     def strongRemoting = 'com.strongloop:strong-remoting-android:1.+'
     compile strongRemoting + '@jar'
-    subJavadocs strongRemoting + ':javadoc'
-    subSources strongRemoting + ':sources'
+    subJavadocs(strongRemoting + ':javadoc') { transitive = false }
+    subSources(strongRemoting + ':sources') { transitive = false }
 
     instrumentTestCompile 'com.google.guava:guava:15.0'
 }
