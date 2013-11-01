@@ -211,6 +211,19 @@ publishing {
             }
         }
     }
+
+    // Workaround for Jenkins-Artifactory plugin not picking up the POM file
+    // from maven-publish
+    def pomFile = file('build/' + archivesBaseName + '-' + version + '.pom')
+    generatePomFileForMavenPublication {
+        destination = pomFile
+    }
+
+    artifacts {
+        archives pomFile
+     }
+
+    dist.dependsOn(generatePomFileForMavenPublication)
 }
 
 task printCompilerInput << {
