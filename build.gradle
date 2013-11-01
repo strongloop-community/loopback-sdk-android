@@ -45,7 +45,7 @@ dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
 
     def strongRemoting = 'com.strongloop:strong-remoting-android:1.+'
-    compile strongRemoting + '@jar'
+    compile(strongRemoting + '@jar') { transitive = true }
     subJavadocs(strongRemoting + ':javadoc') { transitive = false }
     subSources(strongRemoting + ':sources') { transitive = false }
 
@@ -211,6 +211,19 @@ publishing {
             }
         }
     }
+
+    // Workaround for Jenkins-Artifactory plugin not picking up the POM file
+    // from maven-publish
+    def pomFile = file('build/' + archivesBaseName + '-' + version + '.pom')
+    generatePomFileForMavenPublication {
+        destination = pomFile
+    }
+
+    artifacts {
+        archives pomFile
+     }
+
+    dist.dependsOn(generatePomFileForMavenPublication)
 }
 
 task printCompilerInput << {
