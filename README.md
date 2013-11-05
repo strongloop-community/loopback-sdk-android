@@ -9,6 +9,7 @@ If you haven't already created your application backend, see the
 [LoopBack Quick Start](http://docs.strongloop.com/loopback#quick-start).
 
 Important references:
+
  * [Android API Reference Documentation](http://docs.strongloop.com/loopback-android/api/index.html)
  * [LoopBack API Documentation](http://docs.strongloop.com/loopback#nodejs-api)
 
