@@ -15,12 +15,11 @@ Now make sure you have the necesssary SDK tools installed.
 1. Install the following if they are not already installed:
 
  * Tools:
-   * Android SDK Platform-tools 18.1.0.
-   * Android SDK Build-tools 18.1.0. 
+   * Android SDK Platform-tools 18 or newer (e.g. 18.1.1 or 19)
+   * Android SDK Build-tools 18 (e.g. 18.1.1, but not 19)
  * Android 4.3 (API 18) 
    * SDK Platform.
  * Extras 
-   * Android Support Repository.
    * Android Support Library.
 
 For on-device testing, you need an Android device with Android 4 or higher, or you can use a virtual Android device.
@@ -78,6 +77,20 @@ Now follow these steps to run the LoopBack Android guide app:
 It takes some time for the app to initialize: Eventually, you'll see an Android virtual device window.
 Click the LoopBack app icon in the home screen to view the LoopBack Android guide app.
 
+#### Troubleshooting
+
+**Problem**: Build fails with the message `Unable to resolve target 'android-18'`.
+
+**Resolution**: You need to install Android 4.3 (API 18) SDK. See [Prerequisites](#prerequisites) for instructions on how to
+install SDK components.
+
+If you don't want to install an older SDK and want to use the most recent one 
+(for example, Android 4.4 API 19), follow these steps:
+
+1. Close Eclipse ADT.
+1. Edit the file `project.properties` in the `loopback-android-getting-started` directory and change 
+ the `target` property to the API version you have installed. For example: `target=android-19`.
+1. Open Eclipse ADT again. The project should build correctly now.
 
 ### Getting started with the LoopBack SDK
 
