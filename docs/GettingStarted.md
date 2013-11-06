@@ -79,20 +79,18 @@ Click the LoopBack app icon in the home screen to view the LoopBack Android guid
 
 #### Troubleshooting
 
-1. The application cannot be built, the build fails with the message `Unable to
-resolve target 'android-18'`.
-  > You don't have Android 18 (API 19) installed. See
-  > [Prerequisites](#prerequisites) for instructions on how to install
-  > SDK components.
-  >
-  > If you don't want to install an older SDK and use the most recent one (e.g.
-  > Android 4.4 API 19), follow these three steps:
-  >  1. Close Eclipse ADT
-  >  2. Edit project.properties in the `loopback-android-getting-started`
-  >  directory and change the `target` property to the API version you have
-  >  installed. Example:
-  >      target=android-19
-  >  3. Open Eclipse ADT again. The project should build correctly now.
+**Problem**: Build fails with the message `Unable to resolve target 'android-18'`.
+
+**Resolution**: You need to install Android 18 (API 19) SDK. See [Prerequisites](#prerequisites) for instructions on how to 
+install SDK components.  
+
+If you don't want to install an older SDK and want to use the most recent one 
+(for example, Android 4.4 API 19), follow these steps:
+
+1. Close Eclipse ADT.
+1. Edit the file `project.properties` in the `loopback-android-getting-started` directory and change 
+ the `target` property to the API version you have installed. For example: `target=android-19`.
+1. Open Eclipse ADT again. The project should build correctly now.
 
 ### Getting started with the LoopBack SDK
 
