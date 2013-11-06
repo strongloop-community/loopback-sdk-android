@@ -44,7 +44,7 @@ will guide you through the SDK features available to mobile apps.
 Before you start, make sure you have set up at least one Android virtual device:
 Choose **Window > Android Virtual Device Manager**.  See See [AVD Manager](http://developer.android.com/tools/help/avd-manager.html) for more information.
 
-Start the StrongLoop Suite sample backend application.  
+Start the StrongLoop Suite sample backend application.
 In the directory where you installed StrongLoop Suite, enter these commands
 ```sh
 $ cd strongloop/samples/sls-sample-app
@@ -71,7 +71,7 @@ Now follow these steps to run the LoopBack Android guide app:
      1. Browse to the `loopback-android-getting-started` directory.
      1. Click **Finish**.
 
- 1. Click the green **Run* button in the toolbar to run the application. Each tab (fragment) shows a different way
+ 1. Click the green **Run** button in the toolbar to run the application. Each tab (fragment) shows a different way
     to interact with the LoopBack server.
     Look at source code of fragments to see implementation details.
 
