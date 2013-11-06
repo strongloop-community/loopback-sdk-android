@@ -33,7 +33,8 @@ Follow these steps to update the API documentation at http://docs.strongloop.com
 
  1. Update javadoc files
 
-        $ ./gradlew updateApiDocs
+        $ ./gradlew updateApiDocs -P version={version-to-print-in-docs} \
+           -P strongRemotingVersion={version-to-reference}
 
  1. Commit your changes to git
 

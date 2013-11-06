@@ -52,7 +52,7 @@ dependencies {
     instrumentTestCompile 'com.google.guava:guava:15.0'
 }
 
-task unpackJavadocIncludes(type: Copy) {
+task unpackJavadocIncludes(type: Sync) {
     // unpack all source dependencies
     configurations.subSources.resolve().each { dep ->
         from zipTree(dep.absolutePath)
@@ -76,7 +76,7 @@ task androidReleaseJar(type: Jar, dependsOn: assembleRelease) {
     from "$buildDir/classes/release/"
 }
 
-task updateApiDocs(type: Copy, dependsOn: generateReleaseJavadoc) {
+task updateApiDocs(type: Sync, dependsOn: generateReleaseJavadoc) {
     from generateReleaseJavadoc.destinationDir
     into 'docs/api'
 }
