@@ -11,6 +11,7 @@ Before you start, make sure you've installed the [Eclipse Android Development To
 
 Now make sure you have the necesssary SDK tools installed.  In ADT, choose **Window > Android SDK Manager**.
 Install the following if they are not already installed:
+
  * Tools:
    * Android SDK Platform-tools 18.1.0.
    * Android SDK Build-tools 18.1.0. 
