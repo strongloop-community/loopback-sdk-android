@@ -9,8 +9,10 @@ it with your mobile application.
 
 Before you start, make sure you've installed the [Eclipse Android Development Tools](http://developer.android.com/sdk/index.html) (ADT).
 
-Now make sure you have the necesssary SDK tools installed.  In ADT, choose **Window > Android SDK Manager**.
-Install the following if they are not already installed:
+Now make sure you have the necesssary SDK tools installed.  
+
+1. In ADT, choose **Window > Android SDK Manager**.
+1. Install the following if they are not already installed:
 
  * Tools:
    * Android SDK Platform-tools 18.1.0.
@@ -49,7 +51,7 @@ $ cd strongloop/samples/sls-sample-app
 $ slc run app
 ```
  
-Follow these steps to run the LoopBack Android guide app:
+Now follow these steps to run the LoopBack Android guide app:
  
  1. Download the LoopBack guide application to your local machine from
  [GitHub](https://github.com/strongloop/loopback-android-getting-started).
