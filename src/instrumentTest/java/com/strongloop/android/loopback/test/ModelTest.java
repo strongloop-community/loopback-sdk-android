@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.RestAdapter;
-import com.strongloop.android.loopback.ModelPrototype;
+import com.strongloop.android.loopback.ModelRepository;
 
 import org.json.JSONObject;
 
@@ -16,7 +16,7 @@ import static com.strongloop.android.loopback.test.TestHelpers.assertPropertyNam
 
 public class ModelTest extends AsyncTestCase {
 
-    private ModelPrototype<Model> prototype;
+    private ModelRepository<Model> repository;
     private RestAdapter adapter;
 
     @Override
@@ -25,7 +25,7 @@ public class ModelTest extends AsyncTestCase {
         // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
         // host computer.
         adapter = new RestAdapter(getActivity(),  "http://10.0.2.2:3000");
-        prototype = adapter.createPrototype("widget");
+        repository = adapter.createRepository("widget");
     }
 
     public void testCreateAndRemove() throws Throwable {
@@ -35,7 +35,7 @@ public class ModelTest extends AsyncTestCase {
         params.put("name", "Foobar");
         params.put("bars", 1);
 
-        final Model model = prototype.createModel(params);
+        final Model model = repository.createModel(params);
 
         assertEquals("Foobar", model.get("name"));
         assertEquals(1, model.get("bars"));
@@ -65,7 +65,7 @@ public class ModelTest extends AsyncTestCase {
         });
         assertNotNull(lastId[0]);
 
-        JSONObject remoteJson = fetchJsonObjectById(prototype, lastId[0]);
+        JSONObject remoteJson = fetchJsonObjectById(repository, lastId[0]);
         assertNotNull(remoteJson);
         assertPropertyNames(remoteJson, "id", "name", "bars");
 
@@ -73,8 +73,8 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findById(lastId[0],
-                        new ModelPrototype.FindCallback<Model>() {
+                repository.findById(lastId[0],
+                        new ModelRepository.FindCallback<Model>() {
 
                     @Override
                     public void onSuccess(Model model) {
@@ -109,7 +109,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findById(2, new ModelPrototype.FindCallback<Model>() {
+                repository.findById(2, new ModelRepository.FindCallback<Model>() {
 
                     @Override
                     public void onSuccess(Model model) {
@@ -135,7 +135,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findAll(new ModelPrototype.FindAllCallback<Model>() {
+                repository.findAll(new ModelRepository.FindAllCallback<Model>() {
 
                     @Override
                     public void onSuccess(List<Model> list) {
@@ -168,8 +168,8 @@ public class ModelTest extends AsyncTestCase {
     public void testUpdate() throws Throwable {
         doAsyncTest(new AsyncTest() {
 
-            ModelPrototype.FindCallback<Model> verify =
-                    new ModelPrototype.FindCallback<Model>() {
+            ModelRepository.FindCallback<Model> verify =
+                    new ModelRepository.FindCallback<Model>() {
 
                 @Override
                 public void onSuccess(Model model) {
@@ -206,7 +206,7 @@ public class ModelTest extends AsyncTestCase {
 
                 @Override
                 public void onSuccess() {
-                    prototype.findById(2, verify);
+                    repository.findById(2, verify);
                 }
 
                 @Override
@@ -216,8 +216,8 @@ public class ModelTest extends AsyncTestCase {
                 }
             };
 
-            ModelPrototype.FindCallback<Model> update =
-                    new ModelPrototype.FindCallback<Model>() {
+            ModelRepository.FindCallback<Model> update =
+                    new ModelRepository.FindCallback<Model>() {
 
                 @Override
                 public void onSuccess(Model model) {
@@ -235,20 +235,20 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                prototype.findById(2, update);
+                repository.findById(2, update);
             }
         });
     }
 
     public void testRestContractUsesPluralizedNameInUrl() {
-        adapter.createPrototype("weapon");
+        adapter.createRepository("weapon");
 
         String methodUrl = adapter.getContract().getUrlForMethod("weapon.all", null);
         assertEquals("/weapons", methodUrl);
     }
 
     public void testRestContractUsesCustomNameInUrl() {
-        adapter.createPrototype("ammo", "ammo");
+        adapter.createRepository("ammo", "ammo");
 
         String methodUrl = adapter.getContract().getUrlForMethod("ammo.all", null);
         assertEquals("/ammo", methodUrl);

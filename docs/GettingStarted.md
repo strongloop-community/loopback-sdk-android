@@ -122,18 +122,18 @@ independently of the guide application.
 
  1. Once we have access to `adapter` (for the sake of example, we'll assume the
  Adapter is available through our Fragment subclass), we can create
- basic `Model` and `ModelPrototype` objects. Assuming we've previously
+ basic `Model` and `ModelRepository` objects. Assuming we've previously
  created [a model named "product"](http://docs.strongloop.com/loopback#model):
 
     ```java
-    ModelPrototype productPrototype = adapter.createPrototype("product");
-    Model pen = productPrototype.createModel(
+    ModelRepository productRepository = adapter.createRepository("product");
+    Model pen = productRepository.createModel(
                     ImmutableMap.of("name", "Awesome Pen"));
     ```
 
-    All the normal, magical `Model` and `ModelPrototype` methods (for example,
+    All the normal, magical `Model` and `ModelRepository` methods (for example,
     `create`, `destroy`, `findById`) are now available through
-    `productPrototype` and `pen`!
+    `productRepository` and `pen`!
 
  1. Go forth and develop! Check out the [API docs](http://docs.strongloop.com/loopback-android/api/index.html) or create more
  Models with the LoopBack [CLI](http://docs.strongloop.com/loopback#model) or

@@ -5,9 +5,8 @@
       <configuration>
         <option name="SELECTED_BUILD_VARIANT" value="Debug" />
         <option name="ASSEMBLE_TASK_NAME" value="bundleDebug" />
-        <option name="COMPILE_JAVA_TASK_NAME" value="compileDebug" />
         <option name="ASSEMBLE_TEST_TASK_NAME" value="assembleTest" />
-        <option name="SOURCE_GEN_TASK_NAME" value="generateDebugSources" />
+        <option name="SOURCE_GEN_TASK_NAME" value="TODO" />
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
@@ -77,7 +76,7 @@
     <orderEntry type="library" exported="" name="android-async-http-1.4.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="guava-15.0" level="project" />
     <orderEntry type="library" exported="" name="evo-inflector-1.0.1" level="project" />
-    <orderEntry type="library" exported="" name="strong-remoting-android-0.1.0" level="project" />
+    <orderEntry type="library" exported="" name="strong-remoting-android-1.1.0-20131104.101832-1" level="project" />
   </component>
 </module>
 

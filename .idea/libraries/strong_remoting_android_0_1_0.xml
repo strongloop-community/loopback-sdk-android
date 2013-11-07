@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="strong-remoting-android-0.1.0">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/com/strongloop/strong-remoting-android/0.1.0/strong-remoting-android-0.1.0.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

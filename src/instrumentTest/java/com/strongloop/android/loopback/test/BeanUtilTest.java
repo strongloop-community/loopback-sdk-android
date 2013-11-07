@@ -6,7 +6,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import com.strongloop.android.loopback.BeanUtil;
-import com.strongloop.android.remoting.Prototype;
+import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.VirtualObject;
 import static com.strongloop.android.loopback.test.TestHelpers.*;
 
@@ -114,7 +114,7 @@ public class BeanUtilTest extends TestCase {
         }
 
         public Bean() {
-            super(new Prototype("Bean"), new HashMap<String, Object>());
+            super(new Repository("Bean"), new HashMap<String, Object>());
         }
     }
 
