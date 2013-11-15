@@ -15,12 +15,16 @@ Now make sure you have the necesssary SDK tools installed.
 1. Install the following if they are not already installed:
 
  * Tools:
-   * Android SDK Platform-tools 18 or newer (e.g. 18.1.1 or 19)
-   * Android SDK Build-tools 18 (e.g. 18.1.1, but not 19)
+    * Android SDK Platform-tools 18 or newer
+    * Android SDK Build-tools 18 or newer
  * Android 4.3 (API 18) 
-   * SDK Platform.
- * Extras 
-   * Android Support Library.
+    * SDK Platform.
+
+1. To run the LoopBack Android guide application (see below),
+   you also need to install
+
+  * Extras
+    * Google Play Services
 
 For on-device testing, you need an Android device with Android 4 or higher, or you can use a virtual Android device.
 See [AVD Manager](http://developer.android.com/tools/help/avd-manager.html) for more information.
@@ -35,13 +39,25 @@ is with the LoopBack Android guide app. The guide app comes
 ready to compile with Android Studio and each tab in the app
 will guide you through the SDK features available to mobile apps.
 
-<img src="img/getting-started-app-01.png" alt="tab Home" width="20%" />
-<img src="img/getting-started-app-02.png" alt="tab 1" width="20%" />
-<img src="img/getting-started-app-03.png" alt="tab 2" width="20%" />
-<img src="img/getting-started-app-04.png" alt="tab 3" width="20%" />
+<p style="text-align: center">
+  <img src="img/guide-01-cover.png" alt="tab Cover" width="15%" />
+  <img src="img/guide-02-introduction.png" alt="tab Introduction" width="15%" />
+  <img src="img/guide-03-lesson-one.png" alt="tab Lesson One" width="15%" />
+  <img src="img/guide-04-lesson-two.png" alt="tab Lesson Two" width="15%" />
+  <img src="img/guide-05-lesson-three.png" alt="tab Lesson Three" width="15%" />
+  <img src="img/guide-06-finale.png" alt="tab Finale" width="15%" />
+</p>
 
 Before you start, make sure you have set up at least one Android virtual device:
-Choose **Window > Android Virtual Device Manager**.  See See [AVD Manager](http://developer.android.com/tools/help/avd-manager.html) for more information.
+Choose **Window > Android Virtual Device Manager**.
+See [AVD Manager](http://developer.android.com/tools/help/avd-manager.html)
+for more information.
+
+> The guide application uses Google Maps Android API to render a map.
+> As of November 2013, Google Maps are not supported by the Android emulator.
+> and the application will use an alternate view in such case.
+> It's recommended to run the guide on a real Android device to get
+> the best user experience.
 
 Start the StrongLoop Suite sample backend application.
 In the directory where you installed StrongLoop Suite, enter these commands
@@ -63,12 +79,39 @@ Now follow these steps to run the LoopBack Android guide app:
 
  1. Open ADT Eclipse.
 
- 1. Import the Loopback Guide Application to your workspace: 
-     1. Choose Choose **File > Import**.
+ 1. Import the Loopback Guide Application to your workspace:
+     1. Choose **File > Import**.
      1. Choose **Android > Existing Android Code into Workspace**.
      1. Click **Next**.
      1. Browse to the `loopback-android-getting-started` directory.
      1. Click **Finish**.
+
+ 1. Import Google Play Services library project into your workspace.
+    The project is located inside the directory where you have installed
+    the Android SDK.
+     1. Choose **File > Import**.
+     1. Choose **Android > Existing Android Code into Workspace**.
+     1. Click **Next**.
+     1. Browse to the
+      `<android-sdk>/extras/google/google_play_services/libproject/google-play-services_lib`
+      directory.
+     1. Check **Copy projects into workspace**
+     1. Click **Finish**.
+
+  See [Set Up Google Play Services SDK](http://developer.android.com/google/play-services/setup.html)
+  instruction for more details.
+
+ 1. Add the imported google-play-services\_lib as an Android build dependency
+     of the Guide Application.
+     1. In the Package Explorer frame, select LoopbackGuideApplication
+     1. Choose **File > Project Properties**
+     1. Select **Android**
+     1. In the Library frame, click on **Add...** and select
+        google-play-services\_lib
+
+ 1. Obtain an API key for Google Maps Android API v2 per
+    [Getting Started instructions](https://developers.google.com/maps/documentation/android/start#get_an_android_certificate_and_the_google_maps_api_key)
+    and enter it into AndroidManifest.xml.
 
  1. Click the green **Run** button in the toolbar to run the application. Each tab (fragment) shows a different way
     to interact with the LoopBack server.
@@ -98,17 +141,35 @@ If you are creating a new Android application or want to integrate an existing
 application with LoopBack, then use the LoopBack SDK 
 independently of the guide application.
 
- 1. Open the ADT project you want to use with LoopBack, or
-    create a new one.
+#### Eclipse ADT setup
 
- 1. Open the `/sdks` folder of the distribution:
+Follow these steps to add LoopBack SDK to your Eclipse project:
 
-    ```sh
-    open /usr/local/share/strongloop-node/strongloop/sdks/loopback-android-sdk
-    ```
+ 1. Download Android SDK bundle for Eclipse from Maven Central:
+    1. Open repository browser: http://search.maven.org/#browse%7C471080988
+    1. Select the version you would like to use, e.g. 1.1.0
+    1. Download the file `loopback-android-{version}-eclipse-bundle.zip` file, e.g.
+       `loopback-android-1.1.0-eclipse-bundle.zip`
 
- 1. Drag all files and folders from the new Finder window into `libs` folder
-    of your ADT application.
+ 1. Extract the content of the downloaded ZIP file into `libs` folder of your
+    ADT application.
+
+#### Android Studio setup
+ 1. Edit your build.gradle file
+ 1. Make sure you have `mavenCentral()` among the configured repositories:
+  ```groovy
+  repositories {
+      mavenCentral()
+  }
+  ```
+ 1. Add `com.strongloop:loopback-android:1.+` to your compile dependencies:
+ ```groovy
+ dependencies {
+     compile 'com.strongloop:loopback-android:1.+'
+ }
+ ```
+
+#### Working with the SDK
 
  1. Somewhere, we're going to need an adapter to tell the SDK where to find our
  server:
