@@ -18,6 +18,8 @@ apply plugin: 'android-library'
 apply plugin: 'android-maven'
 apply plugin: 'signing'
 
+import org.apache.commons.io.FilenameUtils;
+
 def sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 def isJenkinsBuild = System.getenv("BUILD_NUMBER")
 def isReleaseBuild = !version.contains("SNAPSHOT")
@@ -122,7 +124,7 @@ afterEvaluate { project ->
         configurations.compile.resolve().each { dep ->
             if (dep.name.startsWith('strong-remoting-android')) {
                 new File(dep.absolutePath + '.properties').withWriter { w ->
-                    def baseName = org.apache.commons.io.FilenameUtils.getBaseName(dep.absolutePath)
+                    def baseName = FilenameUtils.getBaseName(dep.absolutePath)
                     w.println('src=src/' + baseName + '-sources.jar')
                     w.println('doc=docs/' + baseName + '-javadoc.jar')
                 }
@@ -139,40 +141,53 @@ afterEvaluate { project ->
       distProperties]) {
         classifier 'eclipse-bundle'
 
-        from(androidReleaseJar.archivePath)
-        from(androidReleaseJar.archivePath.absolutePath + '.properties')
+        def root = project.name + '-' + project.version;
+
+        into(root + '/libs') {
+            from(androidReleaseJar.archivePath)
+            from(androidReleaseJar.archivePath.absolutePath + '.properties')
+        }
 
         // bundle in dependencies
         configurations.compile.resolve().each { dep ->
             // exclude jars from Android SDK
             if (dep.absolutePath.contains('/com/android/')) return
 
-            from (dep.absolutePath)
+            into(root + '/libs') {
+                from (dep.absolutePath)
 
-            // include -sources and -docs for strong-remoting-android
-            if (dep.name.startsWith('strong-remoting-android')) {
-                def baseName = org.apache.commons.io.FilenameUtils.getBaseName(dep.absolutePath)
-                from(dep.absolutePath + '.properties')
+                // include -sources and -docs for strong-remoting-android
+                if (dep.name.startsWith('strong-remoting-android')) {
+                    def baseName = FilenameUtils.getBaseName(dep.absolutePath)
+                    from(dep.absolutePath + '.properties')
+                }
             }
         }
 
         configurations.subJavadocs.resolve().each { dep ->
-          into('docs') {
-              from(dep.absolutePath)
-          }
+            into(root + '/libs/docs') {
+                from(dep.absolutePath)
+            }
         }
 
         configurations.subSources.resolve().each { dep ->
-          into('src') {
-              from(dep.absolutePath)
-          }
+            into(root + '/libs/src') {
+                from(dep.absolutePath)
+            }
         }
 
-        into('src') {
+        into(root + '/libs/docs') {
+            from(androidJavadocsJar.archivePath)
+        }
+
+        into(root + '/libs/src') {
             from(androidSourcesJar.archivePath)
         }
-        into('docs') {
-            from(androidJavadocsJar.archivePath)
+
+        into(root) {
+            from('docs/README.dist') {
+                rename 'README.dist', 'README'
+            }
         }
     }
 
