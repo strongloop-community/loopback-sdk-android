@@ -1,0 +1,13 @@
+LoopBack SDK for Android
+========================
+
+This is an Eclipse ADT bundle of LoopBack SDK for Android.
+
+Usage:
+
+    Copy content of the libs/ folder into the libs/ folder of your
+    Eclipse ADT project.
+
+Full documentation:
+
+    http://docs.strongloop.com/display/DOC/Android+SDK
