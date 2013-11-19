@@ -3,14 +3,11 @@ group = 'com.strongloop';
 buildscript {
   repositories {
       mavenCentral()
-      maven {
-        url "http://artifactory.strongloop.com:8081/artifactory/android-maven-plugin/"
-      }
   }
   dependencies {
       classpath 'com.android.tools.build:gradle:0.6.+'
       classpath 'org.apache.commons:commons-io:1.3.2'
-      classpath 'org.gradle.api.plugins:android-maven-plugin:1.0-SNAPSHOT'
+      classpath 'com.github.dcendents:android-maven-plugin:1.0'
   }
 }
 
