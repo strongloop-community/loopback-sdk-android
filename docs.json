@@ -4,8 +4,6 @@
     "/api": "docs/api"
   },
   "content": [
-    "README.md",
-    "docs/GettingStarted.md",
-    "docs/Subclassing.md"
+    "README.md"
   ]
 }
