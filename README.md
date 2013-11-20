@@ -7,6 +7,6 @@ of using the clunky `AsyncHttpClient`, `JSONObject`, and similar interfaces.
 
 Important references:
 
- * [Android API Reference Documentation](http://docs.strongloop.com/loopback-android/api/index.html)
- * [LoopBack API Documentation](http://docs.strongloop.com/loopback#nodejs-api)
+ * [Android API Reference Documentation](http://apidocs.strongloop.com/loopback-android/api/index.html)
+ * [LoopBack Node.js API Documentation](http://docs.strongloop.com/display/DOC/LoopBack+API)
 
