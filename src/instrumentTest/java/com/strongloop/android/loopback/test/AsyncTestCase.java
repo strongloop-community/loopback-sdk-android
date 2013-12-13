@@ -154,6 +154,27 @@ public class AsyncTestCase extends ActivityTestCase {
         return remoteObject[0];
     }
 
+    @SuppressWarnings("unchecked")
+    public<T extends Model> T fetchModelById(
+            final ModelRepository<T> repository, final Object id)
+            throws Throwable {
+
+        final Model[] remoteObject = new Model[1];
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                repository.findById(id, new FindModelCallback<T>() {
+                    @Override
+                    public void onSuccess(T model) {
+                        remoteObject[0] = model;
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+        return (T) remoteObject[0];
+    }
+
     private static class TestRunner implements Runnable {
 
         private final AsyncTest asyncTest;
