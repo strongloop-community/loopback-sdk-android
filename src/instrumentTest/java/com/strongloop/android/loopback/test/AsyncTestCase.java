@@ -1,7 +1,6 @@
 package com.strongloop.android.loopback.test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +18,10 @@ import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
  * Convenience class to easily perform asynchronous JUnit tests in Android.
  */
 public class AsyncTestCase extends ActivityTestCase {
+
+    // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
+    // host computer.
+    public static final String REST_SERVER_URL = "http://10.0.2.2:3000";
 
     public abstract class AsyncTest implements Runnable {
 
