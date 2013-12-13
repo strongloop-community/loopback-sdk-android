@@ -1,6 +1,7 @@
 package com.strongloop.android.loopback.test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -9,6 +10,7 @@ import org.json.JSONObject;
 
 import android.test.ActivityTestCase;
 
+import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
@@ -59,8 +61,7 @@ public class AsyncTestCase extends ActivityTestCase {
 
             @Override
             public void onError(Throwable t) {
-                fail(t.getMessage());
-                notifyFinished();
+                notifyFailed(t);
             }
 
             @Override
@@ -71,6 +72,43 @@ public class AsyncTestCase extends ActivityTestCase {
                 notifyFinished();
             }
         };
+
+        /**
+         * Model.Callback that reports error as test failures.
+         */
+        public abstract class ModelCallback implements Model.Callback {
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
+
+        /**
+         * ModelRepository.FindCallback<T> that reports errors as test failures.
+         * @param <T> The Model type.
+         */
+        public abstract class FindModelCallback<T extends Model>
+                implements ModelRepository.FindCallback<T> {
+
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
+
+        /**
+         * ModelRepository.FindAllCallback<T> that reports errors
+         * as test failures.
+         * @param <T> The Model type.
+         */
+        public abstract class FindAllModelsCallback<T extends Model>
+                implements ModelRepository.FindAllCallback<T> {
+
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
     }
 
     public void doAsyncTest(final AsyncTest asyncTest) throws Throwable {

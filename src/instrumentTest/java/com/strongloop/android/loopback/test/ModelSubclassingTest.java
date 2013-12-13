@@ -75,19 +75,13 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                model.save(new Model.Callback() {
+                model.save(new ModelCallback() {
 
                     @Override
                     public void onSuccess() {
                         lastId[0] = model.getId();
                         Log.i("ModelSubclassingTest", "id: " + model.getId());
                         assertNotNull(model.getId());
-                        notifyFinished();
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
                         notifyFinished();
                     }
                 });
@@ -104,30 +98,18 @@ public class ModelSubclassingTest extends AsyncTestCase {
             @Override
             public void run() {
                 widgetRepository.findById(lastId[0],
-                        new ModelRepository.FindCallback<Widget>() {
+                        new FindModelCallback<Widget>() {
 
                     @Override
                     public void onSuccess(Widget model) {
-                        model.destroy(new Model.Callback() {
+                        model.destroy(new ModelCallback() {
 
                             @Override
                             public void onSuccess() {
                                 assertTrue(true);
                                 notifyFinished();
                             }
-
-                            @Override
-                            public void onError(Throwable t) {
-                                fail(t.getMessage());
-                                notifyFinished();
-                            }
                         });
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
-                        notifyFinished();
                     }
                 });
             }
@@ -139,7 +121,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                widgetRepository.findById(2, new ModelRepository.FindCallback<Widget>() {
+                widgetRepository.findById(2, new FindModelCallback<Widget>() {
 
                     @Override
                     public void onSuccess(Widget model) {
@@ -147,12 +129,6 @@ public class ModelSubclassingTest extends AsyncTestCase {
                         assertTrue("Invalid class", (model instanceof Model));
                         assertEquals("Invalid name", "Bar", model.getName());
                         assertEquals("Invalid bars", 1, model.getBars());
-                        notifyFinished();
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
                         notifyFinished();
                     }
                 });
@@ -165,7 +141,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                widgetRepository.findAll(new ModelRepository.FindAllCallback<Widget>() {
+                widgetRepository.findAll(new FindAllModelsCallback<Widget>() {
 
                     @Override
                     public void onSuccess(List<Widget> list) {
@@ -184,12 +160,6 @@ public class ModelSubclassingTest extends AsyncTestCase {
                                 list.get(1).getBars());
                         notifyFinished();
                     }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
-                        notifyFinished();
-                    }
                 });
             }
         });
@@ -199,7 +169,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
 
             ModelRepository.FindCallback<Widget> verify =
-                    new ModelRepository.FindCallback<Widget>() {
+                    new FindModelCallback<Widget>() {
 
                 @Override
                 public void onSuccess(Widget model) {
@@ -209,57 +179,32 @@ public class ModelSubclassingTest extends AsyncTestCase {
                     assertEquals("Invalid bars", 1, model.getBars());
 
                     model.setName("Bar");
-                    model.save(new Model.Callback() {
+                    model.save(new ModelCallback() {
 
                         @Override
                         public void onSuccess() {
                             notifyFinished();
                         }
-
-                        @Override
-                        public void onError(Throwable t) {
-                            fail(t.getMessage());
-                            notifyFinished();
-                        }
-
                     });
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    fail(t.getMessage());
-                    notifyFinished();
                 }
             };
 
-            Model.Callback findAgain = new Model.Callback() {
+            Model.Callback findAgain = new ModelCallback() {
 
                 @Override
                 public void onSuccess() {
                     widgetRepository.findById(2, verify);
                 }
-
-                @Override
-                public void onError(Throwable t) {
-                    fail(t.getMessage());
-                    notifyFinished();
-                }
             };
 
             ModelRepository.FindCallback<Widget> update =
-                    new ModelRepository.FindCallback<Widget>() {
+                    new FindModelCallback<Widget>() {
 
                 @Override
                 public void onSuccess(Widget model) {
                     assertNotNull("No model found with ID 2", model);
                     model.setName("Barfoo");
                     model.save(findAgain);
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    fail(t.getMessage());
-                    notifyFinished();
                 }
             };
 
