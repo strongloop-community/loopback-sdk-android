@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import android.test.ActivityTestCase;
 
+import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
@@ -17,6 +18,10 @@ import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
  * Convenience class to easily perform asynchronous JUnit tests in Android.
  */
 public class AsyncTestCase extends ActivityTestCase {
+
+    // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
+    // host computer.
+    public static final String REST_SERVER_URL = "http://10.0.2.2:3000";
 
     public abstract class AsyncTest implements Runnable {
 
@@ -59,8 +64,7 @@ public class AsyncTestCase extends ActivityTestCase {
 
             @Override
             public void onError(Throwable t) {
-                fail(t.getMessage());
-                notifyFinished();
+                notifyFailed(t);
             }
 
             @Override
@@ -71,6 +75,43 @@ public class AsyncTestCase extends ActivityTestCase {
                 notifyFinished();
             }
         };
+
+        /**
+         * Model.Callback that reports error as test failures.
+         */
+        public abstract class ModelCallback implements Model.Callback {
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
+
+        /**
+         * ModelRepository.FindCallback<T> that reports errors as test failures.
+         * @param <T> The Model type.
+         */
+        public abstract class FindModelCallback<T extends Model>
+                implements ModelRepository.FindCallback<T> {
+
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
+
+        /**
+         * ModelRepository.FindAllCallback<T> that reports errors
+         * as test failures.
+         * @param <T> The Model type.
+         */
+        public abstract class FindAllModelsCallback<T extends Model>
+                implements ModelRepository.FindAllCallback<T> {
+
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
     }
 
     public void doAsyncTest(final AsyncTest asyncTest) throws Throwable {
@@ -111,6 +152,27 @@ public class AsyncTestCase extends ActivityTestCase {
             }
         });
         return remoteObject[0];
+    }
+
+    @SuppressWarnings("unchecked")
+    public<T extends Model> T fetchModelById(
+            final ModelRepository<T> repository, final Object id)
+            throws Throwable {
+
+        final Model[] remoteObject = new Model[1];
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                repository.findById(id, new FindModelCallback<T>() {
+                    @Override
+                    public void onSuccess(T model) {
+                        remoteObject[0] = model;
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+        return (T) remoteObject[0];
     }
 
     private static class TestRunner implements Runnable {

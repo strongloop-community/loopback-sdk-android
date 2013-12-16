@@ -1,8 +1,14 @@
 var loopback = require('loopback');
+
 var app = loopback();
 var Memory = loopback.createDataSource({
   connector: loopback.Memory
 });
+
+var lbpn = require('loopback-push-notification');
+var PushModel = lbpn(app, { dataSource: Memory });
+var Installation = PushModel.Installation;
+
 var Widget = loopback.createModel('widget', {
   name: {
     type: String,
@@ -21,9 +27,6 @@ var Widget = loopback.createModel('widget', {
 Widget.attachTo(Memory);
 app.model(Widget);
 
-app.use(loopback.rest());
-app.listen(3000);
-
 Widget.destroyAll(function () {
   Widget.create({
     name: 'Foo',
@@ -37,3 +40,6 @@ Widget.destroyAll(function () {
     bars: 1
   });
 });
+
+app.use(loopback.rest());
+app.listen(3000);
