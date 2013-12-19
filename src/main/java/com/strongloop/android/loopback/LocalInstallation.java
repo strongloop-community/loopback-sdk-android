@@ -10,6 +10,8 @@ import org.apache.http.client.HttpResponseException;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.TimeZone;
+
 /**
  * This class represents the Installation instance assigned to
  * the installation of the Android application that is running
@@ -117,6 +119,8 @@ public class LocalInstallation {
     String appVersion;
     String userId;
     String deviceToken;
+    String[] subscriptions;
+    String timeZone;
     String status;
 
     /**
@@ -192,6 +196,35 @@ public class LocalInstallation {
     public void setDeviceToken(final String deviceToken) {
         this.deviceToken = deviceToken;
         saveDeviceToken();
+    }
+
+    /**
+     * @return List subscriptions.
+     */
+    public String[] getSubscriptions() {
+        return subscriptions;
+    }
+
+    /**
+     * See {@link LocalInstallation#getSubscriptions()}.
+     */
+    public void setSubscriptions(final String[] subscriptions) {
+        this.subscriptions = subscriptions;
+    }
+
+    /**
+     * @return ID of the time zone preferred by the user.
+     * Example: America/Los_Angeles, Europe/London
+     */
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    /**
+     * See {@link LocalInstallation#getTimeZone()}
+     */
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 
     /**
@@ -272,6 +305,7 @@ public class LocalInstallation {
         }
 
         setStatus(LocalInstallation.STATUS_ACTIVE);
+        setTimeZone(TimeZone.getDefault().getID());
     }
 
     private void loadSharedPreferences() {

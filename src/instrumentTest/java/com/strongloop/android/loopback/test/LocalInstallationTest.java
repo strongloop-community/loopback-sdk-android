@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 import android.util.Log;
+import android.test.MoreAsserts;
 
 import com.google.common.collect.ImmutableMap;
 import com.strongloop.android.loopback.LocalInstallation;
@@ -15,7 +16,10 @@ import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.remoting.adapters.Adapter;
 
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.TimeZone;
+
+import static android.test.MoreAsserts.assertEquals;
 
 public class LocalInstallationTest extends AsyncTestCase {
     private final static String TAG = LocalInstallationTest.class.getSimpleName();
@@ -45,15 +49,19 @@ public class LocalInstallationTest extends AsyncTestCase {
         assertEquals("deviceType", "android", install.getDeviceType());
         assertEquals("status", "Active", install.getStatus());
         assertEquals("appVersion", "1.2.3", install.getAppVersion());
+        assertEquals(TimeZone.getDefault().getID(), install.getTimeZone());
     }
 
     public void testServerRoundTrip() throws Throwable {
         final LocalInstallation install = new LocalInstallation(context, adapter);
+        final String[] subscriptions = {"all"};
 
         install.setAppId("an-app-id");
         install.setAppVersion("an-app-version");
         install.setUserId("an-user-id");
         install.setDeviceToken("a-device-token");
+        install.setTimeZone("Europe/London");
+        install.setSubscriptions(subscriptions);
 
         doAsyncTest(new AsyncTest() {
             @Override
@@ -74,6 +82,10 @@ public class LocalInstallationTest extends AsyncTestCase {
         assertEquals("an-user-id", found.get("userId"));
         assertEquals("a-device-token", found.get("deviceToken"));
         assertEquals(LocalInstallation.DEVICE_TYPE_ANDROID, found.get("deviceType"));
+        assertEquals("Europe/London", found.get("timeZone"));
+
+        Object[] subscriptionsFound = ((ArrayList) found.get("subscriptions")).toArray();
+        MoreAsserts.assertEquals(subscriptions, subscriptionsFound);
     }
 
     public void testCachingOfInstallationId() throws Throwable {
