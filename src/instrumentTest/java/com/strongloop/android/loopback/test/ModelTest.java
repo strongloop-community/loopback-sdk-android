@@ -22,9 +22,7 @@ public class ModelTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
-        // host computer.
-        adapter = new RestAdapter(getActivity(),  "http://10.0.2.2:3000");
+        adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
         repository = adapter.createRepository("widget");
     }
 
@@ -45,19 +43,13 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                model.save(new Model.Callback() {
+                model.save(new ModelCallback() {
 
                     @Override
                     public void onSuccess() {
                         lastId[0] = model.getId();
                         Log.i("ModelTest", "id: " + model.getId());
                         assertNotNull(model.getId());
-                        notifyFinished();
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
                         notifyFinished();
                     }
                 });
@@ -74,31 +66,20 @@ public class ModelTest extends AsyncTestCase {
             @Override
             public void run() {
                 repository.findById(lastId[0],
-                        new ModelRepository.FindCallback<Model>() {
+                        new FindModelCallback<Model>() {
 
                     @Override
                     public void onSuccess(Model model) {
-                        model.destroy(new Model.Callback() {
+                        model.destroy(new ModelCallback() {
 
                             @Override
                             public void onSuccess() {
                                 assertTrue(true);
                                 notifyFinished();
                             }
-
-                            @Override
-                            public void onError(Throwable t) {
-                                fail(t.getMessage());
-                                notifyFinished();
-                            }
                         });
                     }
 
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
-                        notifyFinished();
-                    }
                 });
             }
         });
@@ -109,7 +90,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                repository.findById(2, new ModelRepository.FindCallback<Model>() {
+                repository.findById(2, new FindModelCallback<Model>() {
 
                     @Override
                     public void onSuccess(Model model) {
@@ -117,12 +98,6 @@ public class ModelTest extends AsyncTestCase {
                         assertTrue("Invalid class", (model instanceof Model));
                         assertEquals("Invalid name", "Bar", model.get("name"));
                         assertEquals("Invalid bars", 1, model.get("bars"));
-                        notifyFinished();
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
                         notifyFinished();
                     }
                 });
@@ -135,7 +110,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                repository.findAll(new ModelRepository.FindAllCallback<Model>() {
+                repository.findAll(new FindAllModelsCallback<Model>() {
 
                     @Override
                     public void onSuccess(List<Model> list) {
@@ -154,12 +129,6 @@ public class ModelTest extends AsyncTestCase {
                                 list.get(1).get("bars"));
                         notifyFinished();
                     }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        fail(t.getMessage());
-                        notifyFinished();
-                    }
                 });
             }
         });
@@ -169,7 +138,7 @@ public class ModelTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
 
             ModelRepository.FindCallback<Model> verify =
-                    new ModelRepository.FindCallback<Model>() {
+                    new FindModelCallback<Model>() {
 
                 @Override
                 public void onSuccess(Model model) {
@@ -179,57 +148,32 @@ public class ModelTest extends AsyncTestCase {
                     assertEquals("Invalid bars", 1, model.get("bars"));
 
                     model.put("name", "Bar");
-                    model.save(new Model.Callback() {
+                    model.save(new ModelCallback() {
 
                         @Override
                         public void onSuccess() {
                             notifyFinished();
                         }
-
-                        @Override
-                        public void onError(Throwable t) {
-                            fail(t.getMessage());
-                            notifyFinished();
-                        }
-
                     });
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    fail(t.getMessage());
-                    notifyFinished();
                 }
             };
 
-            Model.Callback findAgain = new Model.Callback() {
+            Model.Callback findAgain = new ModelCallback() {
 
                 @Override
                 public void onSuccess() {
                     repository.findById(2, verify);
                 }
-
-                @Override
-                public void onError(Throwable t) {
-                    fail(t.getMessage());
-                    notifyFinished();
-                }
             };
 
             ModelRepository.FindCallback<Model> update =
-                    new ModelRepository.FindCallback<Model>() {
+                    new FindModelCallback<Model>() {
 
                 @Override
                 public void onSuccess(Model model) {
                     assertNotNull("No model found with ID 2", model);
                     model.put("name", "Barfoo");
                     model.save(findAgain);
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    fail(t.getMessage());
-                    notifyFinished();
                 }
             };
 
