@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import org.atteo.evo.inflector.English;
 
 import com.strongloop.android.remoting.JsonUtil;
@@ -73,6 +72,14 @@ public class ModelRepository<T extends Model> extends Repository {
         else {
             this.modelClass = modelClass;
         }
+    }
+
+   /**
+    * Returns the name of the REST url
+    * @return nameForRestUrl
+    */
+    public String getNameForRestUrl() {
+        return nameForRestUrl;
     }
 
     /**
