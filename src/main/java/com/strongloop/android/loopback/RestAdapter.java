@@ -52,6 +52,7 @@ public class RestAdapter
         return repository;
     }
 
+    
     /**
      * Creates a new {@link ModelRepository} from the given subclass.
      * @param repositoryClass A subclass of {@link ModelRepository} to use.
@@ -63,6 +64,7 @@ public class RestAdapter
         U repository = null;
         try {
             repository = repositoryClass.newInstance();
+            repository.setAdapter(this);
         }
         catch (Exception e) {
             IllegalArgumentException ex = new IllegalArgumentException();

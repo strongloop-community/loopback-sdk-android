@@ -16,6 +16,9 @@ import com.strongloop.android.remoting.adapters.RestContractItem;
  * management.
  */
 public class UserRepository extends ModelRepository<User> {
+	
+	private AccessTokenRepository accessTokenRepository;
+
 	public UserRepository() {
 		super("user", User.class);
 	}
@@ -60,7 +63,6 @@ public class UserRepository extends ModelRepository<User> {
                 className + ".login");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/logout", "GET"),
         		className + ".logout");
-        
         return contract;
     }
 	
@@ -74,19 +76,16 @@ public class UserRepository extends ModelRepository<User> {
 	public User createUser(String email, String password, 
 			Map<String, ? extends Object> parameters) {
 
-		ImmutableMap<String, ?extends Object> reqParams = ImmutableMap.of("email", email, 
-				"password", password);
-		
 		ImmutableMap<String, Object> allParams = 
 				new ImmutableMap.Builder<String, Object>()
-				.putAll(reqParams)
 				.putAll(parameters)
+				.put("email", email)
+				.put("password", password)
 				.build();
 		
 		User user = createModel(allParams);
 		
-		return user;
-		
+		return user;	
 	}
 		
 	/**
@@ -116,8 +115,45 @@ public class UserRepository extends ModelRepository<User> {
                     callback.onSuccess(null);
                 }
                 else {
-                    callback.onSuccess(
-                    	createModel(JsonUtil.fromJson(response)));
+            		RestAdapter radapter = (RestAdapter)getAdapter();
+                	if ( accessTokenRepository == null )
+                	{
+                		accessTokenRepository = radapter.createRepository(AccessTokenRepository.class);
+                	}
+                	AccessToken accessTokenModel = accessTokenRepository.createModel(JsonUtil.fromJson(response));
+                	radapter.setAccessToken(accessTokenModel.getId());
+                	
+                	getUser(accessTokenModel, callback);
+                }
+            }
+		
+        });
+		
+	}
+	
+	public void getUser(AccessToken accessTokenModel, 
+			final LoginCallback callback ) {
+
+		Map<String, ?extends Object> params = ImmutableMap.of("id", accessTokenModel.getUserId(),
+				"access_token", accessTokenModel.getId()); 
+		
+        invokeStaticMethod("findById", params,
+                new Adapter.JsonObjectCallback() {
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+
+            @Override
+            public void onSuccess(JSONObject response) {
+                if (response == null) {
+                    // Not found
+                    callback.onSuccess(null);
+                }
+                else {
+                	callback.onSuccess(
+                			createModel(JsonUtil.fromJson(response)));
                 }
             }
 		
