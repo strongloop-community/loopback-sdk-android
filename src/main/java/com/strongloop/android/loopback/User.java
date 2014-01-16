@@ -16,6 +16,12 @@ import com.strongloop.android.remoting.adapters.Adapter;
 
 public class User extends Model {
 
+	private String realm;
+	private String email;
+	private String password;
+	private Boolean emailVerified;
+	private String status;
+	
     public User(Repository repository,
 			Map<String, ? extends Object> creationParameters) {
 		super(repository, creationParameters);
@@ -23,6 +29,46 @@ public class User extends Model {
 
 	public User() {
 		this(null, null);
+	}
+	
+	public void setRealm(String realm) {
+		this.realm = realm;
+	}
+	
+	public String getRealm() {
+		return realm;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	public String getEmail() {
+		return email;
+	}
+	
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+	
+	public void setEmailVerified(Boolean emailVerified) {
+		this.emailVerified = emailVerified;
+	}
+	
+	public Boolean getEmailVerified() {
+		return emailVerified;
+	}
+	
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	public String getStatus() {
+		return status;
 	}
 	
     /**
@@ -33,11 +79,9 @@ public class User extends Model {
  	
 	public void logout(final Callback callback) {
 		
-		String accessToken = getId().toString();
-		Repository repository = getRepository();
-		ImmutableMap<String, ?extends Object> parameters = ImmutableMap.of("access_token", accessToken);
+		final Repository repository = getRepository();
 
-        repository.invokeStaticMethod("logout", parameters,
+        repository.invokeStaticMethod("logout", null,
                 new Adapter.JsonObjectCallback() {
 
             @Override
@@ -47,6 +91,8 @@ public class User extends Model {
 
             @Override
             public void onSuccess(JSONObject response) {
+            	RestAdapter radapter = (RestAdapter)repository.getAdapter();
+            	radapter.setAccessToken(null);
                 callback.onSuccess();
             }
         });
