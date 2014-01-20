@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.adapters.Adapter;
 
