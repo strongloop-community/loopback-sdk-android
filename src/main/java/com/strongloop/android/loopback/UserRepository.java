@@ -1,10 +1,10 @@
 package com.strongloop.android.loopback;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
@@ -19,20 +19,23 @@ public class UserRepository extends ModelRepository<User> {
 	
 	private AccessTokenRepository accessTokenRepository;
 
+	/**
+	 * Creates a new UserRepository, associating it with the static {@link User}
+	 * model class and the user class name.
+	 */
 	public UserRepository() {
 		super("user", User.class);
 	}
 	
+	/**
+	 * Callback passed to loginUser to receive success and newly created
+	 * {@link User} instance or thrown error. 
+	 */
     public interface LoginCallback {
         public void onSuccess(User user);
         public void onError(Throwable t);
     }
 
-	public User createUser() {
-		User user = createModel(null);
-		return user;	
-	}
-	
 	/**
 	 * Creates a {@link User} given an email and a password.
 	 * @param email
@@ -40,8 +43,10 @@ public class UserRepository extends ModelRepository<User> {
 	 * @return A {@link User}.
 	 */
 	public User createUser(String email, String password) 	{
-		User user = createModel(ImmutableMap.of("email", email, 
-				"password", password));
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("email", email);
+		map.put("password", password);
+		User user = createModel(map);
 		user.setRepository(this);
 		return user;
 	}
@@ -76,13 +81,10 @@ public class UserRepository extends ModelRepository<User> {
 	public User createUser(String email, String password, 
 			Map<String, ? extends Object> parameters) {
 
-		ImmutableMap<String, Object> allParams = 
-				new ImmutableMap.Builder<String, Object>()
-				.putAll(parameters)
-				.put("email", email)
-				.put("password", password)
-				.build();
-		
+		HashMap<String, Object> allParams = new HashMap<String, Object>();
+		allParams.putAll(parameters);
+		allParams.put("email", email);
+		allParams.put("password", password);
 		User user = createModel(allParams);
 		
 		return user;	
@@ -97,8 +99,9 @@ public class UserRepository extends ModelRepository<User> {
 	public void loginUser(String email, String password, 
 			final LoginCallback callback) {
 		
-		Map<String, ?extends Object> params = ImmutableMap.of("email", email, 
-				"password", password);
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		params.put("email",  email);
+		params.put("password",  password);
 		
         invokeStaticMethod("login", params,
                 new Adapter.JsonObjectCallback() {
@@ -130,12 +133,20 @@ public class UserRepository extends ModelRepository<User> {
         });
 		
 	}
-	
+
+	/**
+	 * Retrieves a User given an {@link AccessToken}. This is normally used
+	 * internally by loginUser.
+	 * @param accessTokenModel - access token model.
+	 * @param callback - A {@LoginCallback} to get successfully created 
+	 * {@link User} or an error.
+	 */
 	public void getUser(AccessToken accessTokenModel, 
 			final LoginCallback callback ) {
 
-		Map<String, ?extends Object> params = ImmutableMap.of("id", accessTokenModel.getUserId(),
-				"access_token", accessTokenModel.getId()); 
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("id", accessTokenModel.getUserId());
+		params.put("access_token", accessTokenModel.getId());
 		
         invokeStaticMethod("findById", params,
                 new Adapter.JsonObjectCallback() {
