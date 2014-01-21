@@ -2,12 +2,7 @@
 
 package com.strongloop.android.loopback;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.Context;
-
-import com.strongloop.android.remoting.adapters.RestContract;
 
 /**
  * An extension to the vanilla
@@ -18,8 +13,7 @@ import com.strongloop.android.remoting.adapters.RestContract;
 public class RestAdapter
         extends com.strongloop.android.remoting.adapters.RestAdapter {
 
-	private Object accessToken;
-	
+    
     public RestAdapter(Context context, String url) {
         super(context, url);
     }
