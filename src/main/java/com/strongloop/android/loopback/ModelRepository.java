@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.atteo.evo.inflector.English;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.atteo.evo.inflector.English;
 
 import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.Repository;
@@ -82,6 +82,14 @@ public class ModelRepository<T extends Model> extends Repository {
         return nameForRestUrl;
     }
 
+    /**
+     * Sets the REST url 
+     * @param nameForRestUrl
+     */
+    public void setNameForRestUrl(String nameForRestUrl) {
+        this.nameForRestUrl = nameForRestUrl;
+    }
+    
     /**
      * Creates a {@link RestContract} representing this model type's custom
      * routes. Used to extend an {@link Adapter} to support this model type.
