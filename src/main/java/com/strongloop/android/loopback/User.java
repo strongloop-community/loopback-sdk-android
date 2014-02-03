@@ -2,10 +2,7 @@ package com.strongloop.android.loopback;
 
 import java.util.Map;
 
-import org.json.JSONObject;
-
 import com.strongloop.android.remoting.Repository;
-import com.strongloop.android.remoting.adapters.Adapter;
 
 /**
  * A local representative of a single user instance on the server. Derived from Model,

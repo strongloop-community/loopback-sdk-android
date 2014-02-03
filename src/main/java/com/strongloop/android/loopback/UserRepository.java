@@ -60,7 +60,6 @@ public class UserRepository extends ModelRepository<User> {
         map.put("email", email);
         map.put("password", password);
         User user = createModel(map);
-        user.setRepository(this);
         return user;
     }
     

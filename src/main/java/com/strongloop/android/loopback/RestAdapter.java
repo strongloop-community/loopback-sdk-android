@@ -84,6 +84,29 @@ public class RestAdapter
         return repository;
     }
 
+    /**
+     * Craes a new {@link ModelRepository) from the given sublcass.
+     * @param repositoryClass A subclass of {@link ModelRepository} to use.
+     * @param nameForRestUrl - The REST url to use for this repository.
+     * @return A new repository instance.
+     */
+    public <U extends ModelRepository> U createRepository(
+            Class<U> repositoryClass, String nameForRestUrl) {
+        U repository = null;
+        try {
+            repository = repositoryClass.newInstance();
+            repository.setAdapter(this);
+            repository.setNameForRestUrl(nameForRestUrl);
+        }
+        catch (Exception e) {
+            IllegalArgumentException ex = new IllegalArgumentException();
+            ex.initCause(e);
+            throw ex;
+        }
+        attachModelRepository(repository);
+        return repository;
+    }
+    
     private void attachModelRepository(ModelRepository repository) {
         getContract().addItemsFromContract(repository.createContract());
         repository.setAdapter(this);
