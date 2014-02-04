@@ -1,19 +1,13 @@
 package com.strongloop.android.loopback;
 
 import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.json.JSONObject;
 
-import android.os.Environment;
-
 import com.strongloop.android.remoting.adapters.Adapter;
-
-
-
 
 public class File extends Model {
 
