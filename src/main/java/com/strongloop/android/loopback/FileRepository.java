@@ -53,7 +53,18 @@ public class FileRepository extends ModelRepository<File> {
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
                 "/:container/download/:name", "GET", true),
                 className + ".download");
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
+                "/:container/files/:name", "GET"),
+                className + ".prototype.get");
         return contract;
+    }
+   
+    public void get(String containerName, String name, final FileCallback callback) {
+        
+        File fileModel = createModel(null);
+        fileModel.setName(name);;
+        fileModel.setContainer(containerName);
+        fileModel.get(callback);
     }
     
     public void download(final String downloadPath, final String serverContainer, final String fileName,

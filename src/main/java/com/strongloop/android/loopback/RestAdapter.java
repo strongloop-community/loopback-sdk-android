@@ -84,12 +84,6 @@ public class RestAdapter
         return repository;
     }
 
-    /**
-     * Craes a new {@link ModelRepository) from the given sublcass.
-     * @param repositoryClass A subclass of {@link ModelRepository} to use.
-     * @param nameForRestUrl - The REST url to use for this repository.
-     * @return A new repository instance.
-     */
     public <U extends ModelRepository> U createRepository(
             Class<U> repositoryClass, String nameForRestUrl) {
         U repository = null;

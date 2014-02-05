@@ -16,6 +16,11 @@ import com.strongloop.android.remoting.adapters.RestContractItem;
 
 public class ContainerRepository extends ModelRepository<Container> {
 
+    private FileRepository fileRepo;
+    public FileRepository getFileRepository() {
+        return fileRepo;
+    }
+    
     public ContainerRepository() {
         super("container", Container.class);
     }
@@ -34,6 +39,8 @@ public class ContainerRepository extends ModelRepository<Container> {
         Map<String, Object>map = new HashMap<String, Object>();
         map.put("name", name);
         Container container = createModel(map);
+        if ( fileRepo == null )
+            fileRepo = ((RestAdapter)getAdapter()).createRepository(FileRepository.class, "containers");
         return container;
     }
     
@@ -52,10 +59,37 @@ public class ContainerRepository extends ModelRepository<Container> {
         
         contract.addItem(new RestContractItem("/" + getNameForRestUrl(), "GET"),
                 className + ".getAll");
+
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/:name", "GET"),
+                className + ".prototype.get");        
+        
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/:name", "DELETE"),
+                className + ".prototype.remove");
+        
         return contract;
     }
     
-    public void getAllContainers( final AllContainersCallback callback) {
+    public void get( String containerName, final ContainerCallback callback ) {
+        Container container =  createContainer(containerName);
+        container.setName(containerName);
+        container.invokeMethod("get", container.toMap(), new Adapter.JsonObjectCallback() {
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);                
+            }
+
+            @Override
+            public void onSuccess(JSONObject response) {
+                // create container
+                Container container  = createModel(JsonUtil.fromJson(response));
+                callback.onSuccess(container);
+            }
+
+        });        
+    }
+    
+    public void getAll( final AllContainersCallback callback) {
         
         invokeStaticMethod("getAll", null, new Adapter.JsonArrayCallback() {
 
@@ -88,4 +122,5 @@ public class ContainerRepository extends ModelRepository<Container> {
         }
         return containerList;        
     }
+    
 }
