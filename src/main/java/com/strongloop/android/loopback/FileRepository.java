@@ -25,11 +25,11 @@ public class FileRepository extends ModelRepository<File> {
         public void onError(Throwable t);
     }
     
-    public File createFile(String name, String url, String container) {
+    public File createFile(String containerName, String fileName, String url) {
         Map<String, Object>map = new HashMap<String, Object>();
-        map.put("name", name);
+        map.put("name", fileName);
         map.put("url", url);
-        map.put("container", container);
+        map.put("container", containerName);
         File file = createModel(map);
         return file;
     }
@@ -56,6 +56,10 @@ public class FileRepository extends ModelRepository<File> {
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
                 "/:container/files/:name", "GET"),
                 className + ".prototype.get");
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
+                "/:container/:name", "DELETE"),
+                className + ".prototype.delete");
+       
         return contract;
     }
    
@@ -94,14 +98,12 @@ public class FileRepository extends ModelRepository<File> {
                     }
                 }
             }
-        
         });
         
     }
     
     protected File createFile(String downloadPath, String serverContainer, String fileName, ByteBuffer byteBuffer) throws IOException {
-    
-        File newFile = createFile(fileName, downloadPath, serverContainer);
+        File newFile = createFile(serverContainer, fileName, downloadPath);
         newFile.save(byteBuffer);
         return newFile;
     }
