@@ -101,23 +101,5 @@ public class File extends Model {
             bos.close();
             saved = true;
         return saved;
-    }    
-    
-    public void get(final FileRepository.FileCallback callback)
-    {
-        final File file = this;
-        invokeMethod("get", toMap(), new Adapter.JsonCallback() {
-            
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);;
-            }
-            
-            @Override
-            public void onSuccess(Object response) {
-               callback.onSuccess(file);
-            }
-        });
-        
-    }
+    }        
 }
