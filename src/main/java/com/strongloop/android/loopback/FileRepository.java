@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
+
+import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
@@ -55,7 +58,7 @@ public class FileRepository extends ModelRepository<File> {
                 className + ".download");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
                 "/:container/files/:name", "GET"),
-                className + ".prototype.get");
+                className + ".get");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
                 "/:container/:name", "DELETE"),
                 className + ".prototype.delete");
@@ -64,11 +67,24 @@ public class FileRepository extends ModelRepository<File> {
     }
    
     public void get(String containerName, String name, final FileCallback callback) {
-        
-        File fileModel = createModel(null);
-        fileModel.setName(name);;
-        fileModel.setContainer(containerName);
-        fileModel.get(callback);
+        final HashMap<String, Object> params = new HashMap<String, Object>();
+
+        params.put("container", containerName);
+        params.put("name", name);
+        invokeStaticMethod("get", params, new Adapter.JsonObjectCallback() {
+            
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);;
+            }
+            
+            @Override
+            public void onSuccess(JSONObject response) {
+                File file  = createModel(JsonUtil.fromJson(response));                
+                callback.onSuccess(file);
+            }
+        });
+                
     }
     
     public void download(final String downloadPath, final String serverContainer, final String fileName,

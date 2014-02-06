@@ -34,16 +34,7 @@ public class ContainerRepository extends ModelRepository<Container> {
         public void onSuccess(List<Container> containerList);
         public void onError(Throwable t);
     }
-    
-    public Container createContainer(String name) {
-        Map<String, Object>map = new HashMap<String, Object>();
-        map.put("name", name);
-        Container container = createModel(map);
-        if ( fileRepo == null )
-            fileRepo = ((RestAdapter)getAdapter()).createRepository(FileRepository.class, "containers");
-        return container;
-    }
-    
+        
     /**
      * Creates a {@link RestContract} representing the user type's custom
      * routes. Used to extend an {@link Adapter} to support user. Calls
@@ -61,7 +52,7 @@ public class ContainerRepository extends ModelRepository<Container> {
                 className + ".getAll");
 
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/:name", "GET"),
-                className + ".prototype.get");        
+                className + ".get");        
         
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/:name", "DELETE"),
                 className + ".prototype.remove");
@@ -70,9 +61,11 @@ public class ContainerRepository extends ModelRepository<Container> {
     }
     
     public void get( String containerName, final ContainerCallback callback ) {
-        Container container =  createContainer(containerName);
-        container.setName(containerName);
-        container.invokeMethod("get", container.toMap(), new Adapter.JsonObjectCallback() {
+
+        Map<String, Object>map = new HashMap<String, Object>();
+        map.put("name", containerName);
+        
+        invokeStaticMethod("get", map, new Adapter.JsonObjectCallback() {
 
             @Override
             public void onError(Throwable t) {
@@ -81,8 +74,7 @@ public class ContainerRepository extends ModelRepository<Container> {
 
             @Override
             public void onSuccess(JSONObject response) {
-                // create container
-                Container container  = createModel(JsonUtil.fromJson(response));
+                Container container = createFromParams(JsonUtil.fromJson(response));
                 callback.onSuccess(container);
             }
 
@@ -117,10 +109,23 @@ public class ContainerRepository extends ModelRepository<Container> {
         ArrayList<Container> containerList = new ArrayList<Container>(jarray.length());
         for( int i=0; i<jarray.length(); i++ ) {
             JSONObject jobj = jarray.getJSONObject(i);
-            Container container = createModel(JsonUtil.fromJson(jobj));
+            Container container = createFromParams(JsonUtil.fromJson(jobj));
             containerList.add(container);
         }
         return containerList;        
     }
     
+    public Container createContainer(String name) {
+        Map<String, Object>map = new HashMap<String, Object>();
+        map.put("name", name);
+        Container container = createFromParams(map);
+        return container;
+    }
+    
+    protected Container createFromParams(Map<String, Object> map) {
+        Container container = createModel(map);
+        if ( fileRepo == null )
+            fileRepo = ((RestAdapter)getAdapter()).createRepository(FileRepository.class, "containers");
+        return container;
+    }
 }
