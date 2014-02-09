@@ -148,7 +148,7 @@ public class UserRepository extends ModelRepository<User> {
     public void logout(final Callback callback) {
         
         invokeStaticMethod("logout", null,
-                new Adapter.JsonObjectCallback() {
+                new Adapter.Callback() {
 
             @Override
             public void onError(Throwable t) {
@@ -156,10 +156,11 @@ public class UserRepository extends ModelRepository<User> {
             }
 
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(String response, Object... data) {
                 RestAdapter radapter = (RestAdapter)getAdapter();
-                radapter.setAccessToken(null);
+                radapter.removeAccessToken();
                 callback.onSuccess();
+                
             }
         });
     }
