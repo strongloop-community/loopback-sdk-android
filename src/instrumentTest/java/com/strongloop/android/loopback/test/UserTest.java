@@ -56,9 +56,6 @@ public class UserTest extends AsyncTestCase {
 
     // login / logout
     public void testLoginLogout() throws Throwable {
-
-        final Object[] user = new Object[1];
-
         // Login the user using the repository
         doAsyncTest(new AsyncTest() {
 
@@ -66,7 +63,7 @@ public class UserTest extends AsyncTestCase {
             public void run() {
 
                 userRepo.loginUser(userEmail, userPassword,
-                    userRepo.new GetLoggedInUserCallback() {
+                    new UserRepository.LoginCallback() {
 
                         @Override
                         public void onError (Throwable t){
@@ -74,20 +71,18 @@ public class UserTest extends AsyncTestCase {
                         }
 
                         @Override
-                        public void onSuccess (User newUser) {
-                            user[0] = newUser;
-                            assertNotNull(newUser);
-                            assertNotNull(newUser.getId());
-                            Log.i("UserTest", "login id: " + newUser.getId());
-
+                        public void onSuccess (AccessToken token, User currentUser) {
+                            assertNotNull("currentUser should be not null", currentUser);
+                            assertEquals("currentUser.email", currentUser.getEmail(), userEmail);
+                            assertNotNull("accessToken should be not null", token);
+                            assertEquals("userId", token.getUserId(), currentUser.getId());
+                            Log.i("UserTest", "login id: " + currentUser.getId());
                             notifyFinished();
                         }
                     });
                }
 
         });
-
-        assertNotNull(user[0]);
 
         doAsyncTest(new AsyncTest() {
 

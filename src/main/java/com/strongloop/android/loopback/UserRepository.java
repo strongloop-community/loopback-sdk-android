@@ -20,6 +20,18 @@ public class UserRepository extends ModelRepository<User> {
     
     private AccessTokenRepository accessTokenRepository;
 
+    private RestAdapter getRestAdapter() {
+        return (RestAdapter) getAdapter();
+    }
+
+    private AccessTokenRepository getAccessTokenRepository() {
+        if (accessTokenRepository == null) {
+            accessTokenRepository = getRestAdapter()
+                    .createRepository(AccessTokenRepository.class);
+        }
+        return accessTokenRepository;
+    }
+
     /**
      * Creates a new UserRepository, associating it with the static {@link User}
      * model class and the user class name.
@@ -33,20 +45,8 @@ public class UserRepository extends ModelRepository<User> {
      * {@link User} instance or thrown error. 
      */
     public interface LoginCallback {
-        public void onSuccess(AccessToken token);
+        public void onSuccess(AccessToken token, User currentUser);
         public void onError(Throwable t);
-    }
-
-    /**
-     * Helper class that logins and passes back a {$link User} on success.
-     */
-    public abstract class GetLoggedInUserCallback implements LoginCallback, ModelRepository.FindCallback<User> {        
-        public abstract void onSuccess(User user);
-        
-        @Override
-        public void onSuccess(AccessToken token) {
-          findById(token.getUserId(), this);
-        }
     }
 
     /**
@@ -77,7 +77,7 @@ public class UserRepository extends ModelRepository<User> {
         
         String className = getClassName();
 
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/login", "POST"),
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/login?include=user", "POST"),
                 className + ".login");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/logout", "GET"),
                 className + ".logout");
@@ -115,28 +115,29 @@ public class UserRepository extends ModelRepository<User> {
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("email",  email);
         params.put("password",  password);
-        
+
         invokeStaticMethod("login", params,
                 new Adapter.JsonObjectCallback() {
 
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);
-            }
+                    @Override
+                    public void onError(Throwable t) {
+                        callback.onError(t);
+                    }
 
-            @Override
-            public void onSuccess(JSONObject response) {
-                RestAdapter radapter = (RestAdapter)getAdapter();
-                if ( accessTokenRepository == null ) {
-                    accessTokenRepository = radapter.createRepository(AccessTokenRepository.class);
-                }
-                AccessToken accessTokenModel = accessTokenRepository.createModel(JsonUtil.fromJson(response));
-                radapter.setAccessToken(accessTokenModel.getId().toString());
-                callback.onSuccess(accessTokenModel);
-            }
-        
-        });
-        
+                    @Override
+                    public void onSuccess(JSONObject response) {
+                        AccessToken token = getAccessTokenRepository()
+                                .createModel(JsonUtil.fromJson(response));
+                        getRestAdapter().setAccessToken(token.getId().toString());
+
+                        JSONObject userJson = response.optJSONObject("user");
+                        User user = userJson != null
+                                ? createModel(JsonUtil.fromJson(userJson))
+                                : null;
+
+                        callback.onSuccess(token, user);
+                    }
+                });
     }
 
     /**
