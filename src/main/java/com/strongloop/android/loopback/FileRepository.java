@@ -40,7 +40,7 @@ public class FileRepository extends ModelRepository<File> {
     /**
      * Creates a {@link RestContract} representing the user type's custom
      * routes. Used to extend an {@link Adapter} to support user. Calls
-     * super {@link ModelRepository) createContract first. 
+     * super {@link ModelRepository} createContract first.
      *
      * @return A {@link RestContract} for this model type.
      */
@@ -50,11 +50,11 @@ public class FileRepository extends ModelRepository<File> {
         
         String className = getClassName();
         
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
-                "/:container/upload", "POST", true),
+        contract.addItem(RestContractItem.createMultipart(
+                "/" + getNameForRestUrl() + "/:container/upload", "POST"),
                 className + ".prototype.upload");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
-                "/:container/download/:name", "GET", true),
+                "/:container/download/:name", "GET"),
                 className + ".download");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
                 "/:container/files/:name", "GET"),
@@ -87,14 +87,16 @@ public class FileRepository extends ModelRepository<File> {
                 
     }
     
-    public void download(final String downloadPath, final String serverContainer, final String fileName,
-            final FileCallback callback) {
+    public void download(final String downloadPath,
+                         final String serverContainer,
+                         final String fileName,
+                         final FileCallback callback) {
         final HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("container", serverContainer);
         params.put("name", fileName);
                 
         invokeStaticMethod("download", params,
-                new Adapter.Callback() {
+                new Adapter.BinaryCallback() {
 
             @Override
             public void onError(Throwable t) {
@@ -102,23 +104,20 @@ public class FileRepository extends ModelRepository<File> {
             }
 
             @Override
-            public void onSuccess(String response, Object...data) {
-                if ( data.length > 0 && data[0] instanceof ByteBuffer) {
-                    ByteBuffer byteBuffer = (ByteBuffer)data[0];
-                    File newFile;
-                    try {
-                        newFile = createFile(downloadPath, serverContainer, fileName, byteBuffer);
-                        callback.onSuccess(newFile);
-                    } catch (IOException e) {
-                        callback.onError(e);
-                    }
+            public void onSuccess(byte[] response) {
+                File newFile;
+                try {
+                    newFile = createFile(downloadPath, serverContainer, fileName, response);
+                    callback.onSuccess(newFile);
+                } catch (IOException e) {
+                    callback.onError(e);
                 }
             }
         });
         
     }
     
-    protected File createFile(String downloadPath, String serverContainer, String fileName, ByteBuffer byteBuffer) throws IOException {
+    protected File createFile(String downloadPath, String serverContainer, String fileName, byte[] byteBuffer) throws IOException {
         File newFile = createFile(serverContainer, fileName, downloadPath);
         newFile.save(byteBuffer);
         return newFile;

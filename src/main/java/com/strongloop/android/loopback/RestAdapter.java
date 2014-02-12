@@ -100,7 +100,7 @@ public class RestAdapter
         attachModelRepository(repository);
         return repository;
     }
-    
+
     private void attachModelRepository(ModelRepository repository) {
         getContract().addItemsFromContract(repository.createContract());
         repository.setAdapter(this);

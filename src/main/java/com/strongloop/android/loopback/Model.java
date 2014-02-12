@@ -128,8 +128,8 @@ public class Model extends VirtualObject {
             }
 
             @Override
-            public void onSuccess(String response, Object... data) {
-                callback.onSuccess();                
+            public void onSuccess(String response) {
+                callback.onSuccess();
             }
         });
     }

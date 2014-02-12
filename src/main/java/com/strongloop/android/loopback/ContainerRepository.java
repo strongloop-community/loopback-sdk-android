@@ -38,7 +38,7 @@ public class ContainerRepository extends ModelRepository<Container> {
     /**
      * Creates a {@link RestContract} representing the user type's custom
      * routes. Used to extend an {@link Adapter} to support user. Calls
-     * super {@link ModelRepository) createContract first. 
+     * super {@link ModelRepository} createContract first.
      *
      * @return A {@link RestContract} for this model type.
      */

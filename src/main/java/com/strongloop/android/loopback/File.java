@@ -86,7 +86,7 @@ public class File extends Model {
         });
     }
 
-    public boolean save(ByteBuffer byteBuffer) throws IOException
+    public boolean save(byte[] content) throws IOException
     {
         boolean saved = false;
 
@@ -96,7 +96,7 @@ public class File extends Model {
         BufferedOutputStream bos = null;
         
         bos = new BufferedOutputStream( new FileOutputStream(uploadFiles) );
-            bos.write(byteBuffer.array());
+            bos.write(content);
             bos.flush();
             bos.close();
             saved = true;

@@ -90,8 +90,6 @@ public class BeanUtil {
                     }
                     catch (Exception e) { }
 
-                    Object value2 = value;
-                    
                     if (!deepCopy) {
                         map.put(propertyName, value);
                     }

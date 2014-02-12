@@ -83,13 +83,13 @@ public class ModelRepository<T extends Model> extends Repository {
     }
 
     /**
-     * Sets the REST url 
+     * Sets the REST url
      * @param nameForRestUrl
      */
     public void setNameForRestUrl(String nameForRestUrl) {
         this.nameForRestUrl = nameForRestUrl;
     }
-    
+
     /**
      * Creates a {@link RestContract} representing this model type's custom
      * routes. Used to extend an {@link Adapter} to support this model type.
