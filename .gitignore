@@ -35,3 +35,7 @@ proguard/
 .DS_Store
 
 node_modules
+
+src/main/project.properties
+
+src/main/.settings/org.eclipse.jdt.core.prefs

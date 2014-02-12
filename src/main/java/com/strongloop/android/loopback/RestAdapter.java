@@ -13,6 +13,7 @@ import android.content.Context;
 public class RestAdapter
         extends com.strongloop.android.remoting.adapters.RestAdapter {
 
+    
     public RestAdapter(Context context, String url) {
         super(context, url);
     }
@@ -60,6 +61,7 @@ public class RestAdapter
         return repository;
     }
 
+    
     /**
      * Creates a new {@link ModelRepository} from the given subclass.
      * @param repositoryClass A subclass of {@link ModelRepository} to use.
@@ -71,6 +73,7 @@ public class RestAdapter
         U repository = null;
         try {
             repository = repositoryClass.newInstance();
+            repository.setAdapter(this);
         }
         catch (Exception e) {
             IllegalArgumentException ex = new IllegalArgumentException();
@@ -81,8 +84,25 @@ public class RestAdapter
         return repository;
     }
 
+    public <U extends ModelRepository> U createRepository(
+            Class<U> repositoryClass, String nameForRestUrl) {
+        U repository = null;
+        try {
+            repository = repositoryClass.newInstance();
+            repository.setAdapter(this);
+            repository.setNameForRestUrl(nameForRestUrl);
+        }
+        catch (Exception e) {
+            IllegalArgumentException ex = new IllegalArgumentException();
+            ex.initCause(e);
+            throw ex;
+        }
+        attachModelRepository(repository);
+        return repository;
+    }
+    
     private void attachModelRepository(ModelRepository repository) {
         getContract().addItemsFromContract(repository.createContract());
         repository.setAdapter(this);
     }
-}
+ }

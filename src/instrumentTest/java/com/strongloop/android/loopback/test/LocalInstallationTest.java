@@ -151,7 +151,7 @@ public class LocalInstallationTest extends AsyncTestCase {
                         ImmutableMap.of("id", install.getId()),
                         new Adapter.Callback() {
                             @Override
-                            public void onSuccess(String response) {
+                            public void onSuccess(String response, Object...data) {
                                 notifyFinished();
                             }
 
