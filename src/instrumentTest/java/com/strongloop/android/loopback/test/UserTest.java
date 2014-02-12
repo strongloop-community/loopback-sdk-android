@@ -16,8 +16,9 @@ public class UserTest extends AsyncTestCase {
     private RestAdapter adapter;
     private UserRepository userRepo;
 
-    private String userEmail = "testemail@test.com";
-    private String userPassword = "testpassword";
+    static final private String uid = String.valueOf(new java.util.Date().getTime());
+    static final private String userEmail = uid + "@test.com";
+    static final private String userPassword = "testpassword";
 
     @Override
     protected void setUp() throws Exception {
@@ -61,17 +62,15 @@ public class UserTest extends AsyncTestCase {
         // Login the user using the repository
         doAsyncTest(new AsyncTest() {
 
-            final AsyncTest asyncTest = this;
-
             @Override
             public void run() {
 
-                userRepo.loginUser(userEmail,userPassword,
+                userRepo.loginUser(userEmail, userPassword,
                     userRepo.new GetLoggedInUserCallback() {
 
                         @Override
                         public void onError (Throwable t){
-                            asyncTest.notifyFailed(t);
+                            notifyFailed(t);
                         }
 
                         @Override
@@ -92,8 +91,6 @@ public class UserTest extends AsyncTestCase {
 
         doAsyncTest(new AsyncTest() {
 
-            final AsyncTest asyncTest = this;
-
             @Override
             public void run() {
 
@@ -107,7 +104,7 @@ public class UserTest extends AsyncTestCase {
 
                     @Override
                     public void onError(Throwable t) {
-                        asyncTest.notifyFailed(t);
+                        notifyFailed(t);
                     }
 
                 });

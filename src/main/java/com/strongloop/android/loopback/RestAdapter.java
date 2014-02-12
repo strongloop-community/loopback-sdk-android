@@ -22,7 +22,7 @@ public class RestAdapter
         getClient().addHeader("Authorization", accessToken);
     }
 
-    public void removeAccessToken() {
+    public void clearAccessToken() {
         getClient().addHeader("Authorization", null);
     }
 

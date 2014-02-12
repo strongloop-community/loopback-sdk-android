@@ -131,7 +131,7 @@ public class UserRepository extends ModelRepository<User> {
                     accessTokenRepository = radapter.createRepository(AccessTokenRepository.class);
                 }
                 AccessToken accessTokenModel = accessTokenRepository.createModel(JsonUtil.fromJson(response));
-                radapter.setAccessToken(accessTokenModel.getId());
+                radapter.setAccessToken(accessTokenModel.getId().toString());
                 callback.onSuccess(accessTokenModel);
             }
         
@@ -157,11 +157,10 @@ public class UserRepository extends ModelRepository<User> {
             }
 
             @Override
-            public void onSuccess(String response, Object... data) {
+            public void onSuccess(String response) {
                 RestAdapter radapter = (RestAdapter)getAdapter();
-                radapter.removeAccessToken();
+                radapter.clearAccessToken();
                 callback.onSuccess();
-                
             }
         });
     }
