@@ -11,6 +11,8 @@ import android.test.ActivityTestCase;
 
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
+import com.strongloop.android.loopback.User;
+import com.strongloop.android.loopback.UserRepository;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
 
@@ -106,6 +108,14 @@ public class AsyncTestCase extends ActivityTestCase {
          */
         public abstract class FindAllModelsCallback<T extends Model>
                 implements ModelRepository.FindAllCallback<T> {
+
+            @Override
+            public void onError(Throwable t) {
+                notifyFailed(t);
+            }
+        }
+
+        public abstract class LoginTestCallback implements UserRepository.LoginCallback {
 
             @Override
             public void onError(Throwable t) {
