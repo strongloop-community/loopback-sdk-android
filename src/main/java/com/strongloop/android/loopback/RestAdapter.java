@@ -17,6 +17,14 @@ public class RestAdapter
         super(context, url);
     }
 
+    public void setAccessToken(String accessToken) {
+        getClient().addHeader("Authorization", accessToken);
+    }
+
+    public void removeAccessToken() {
+        getClient().addHeader("Authorization", null);
+    }
+
     /**
      * Creates a new {@link ModelRepository} representing the named model type.
      * @param name The model name.
