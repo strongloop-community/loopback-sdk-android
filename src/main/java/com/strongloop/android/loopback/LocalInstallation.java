@@ -12,6 +12,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.strongloop.android.remoting.BeanUtil;
+
 /**
  * This class represents the Installation instance assigned to
  * the installation of the Android application that is running

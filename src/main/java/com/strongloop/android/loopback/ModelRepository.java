@@ -22,7 +22,7 @@ import com.strongloop.android.remoting.adapters.RestContractItem;
  * the name of the model type for easy {@link Model} creation, discovery, and
  * management.
  */
-public class ModelRepository<T extends Model> extends Repository {
+public class ModelRepository<T extends Model> extends Repository<T> {
 
     public interface FindCallback<T extends Model> {
         public void onSuccess(T model);
@@ -34,7 +34,6 @@ public class ModelRepository<T extends Model> extends Repository {
         public void onError(Throwable t);
     }
 
-    private Class<T> modelClass;
     private String nameForRestUrl;
 
     public ModelRepository(String className) {
@@ -60,18 +59,11 @@ public class ModelRepository<T extends Model> extends Repository {
      */
     @SuppressWarnings("unchecked")
     public ModelRepository(String className, String nameForRestUrl, Class<T> modelClass) {
-        super(className);
+        super(className, modelClass != null ? modelClass : (Class<T>)Model.class);
 
         this.nameForRestUrl = nameForRestUrl != null
                 ? nameForRestUrl
                 : English.plural(className);
-
-        if (modelClass == null) {
-            this.modelClass = (Class<T>)Model.class;
-        }
-        else {
-            this.modelClass = modelClass;
-        }
     }
 
    /**
@@ -122,26 +114,14 @@ public class ModelRepository<T extends Model> extends Repository {
      * @return A new {@link Model}.
      */
     public T createModel(Map<String, ? extends Object> parameters) {
-        if (parameters == null) {
-            parameters = new HashMap<String, Object>();
-        }
-        T model = null;
-        try {
-            model = modelClass.newInstance();
-        }
-        catch (Exception e) {
-            IllegalArgumentException ex = new IllegalArgumentException();
-            ex.initCause(e);
-            throw ex;
-        }
-        model.setRepository(this);
-        model.setCreationParameters(parameters);
+        T model = createObject(parameters);
         model.putAll(parameters);
-        BeanUtil.setProperties(model, parameters, true);
+
         Object id = parameters.get("id");
         if (id != null) {
             model.setId(id);
         }
+
         return model;
     }
 

@@ -84,7 +84,7 @@ public class Model extends VirtualObject {
         Map<String, Object> map = new HashMap<String, Object>();
         map.putAll(overflow);
         map.put("id", getId());
-        map.putAll(BeanUtil.getProperties(this, false, false));
+        map.putAll(super.toMap());
         return map;
     }
 
