@@ -51,9 +51,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
-        // host computer.
-        RestAdapter adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
+        RestAdapter adapter = createRestAdapter();
         widgetRepository = adapter.createRepository(WidgetRepository.class);
     }
 

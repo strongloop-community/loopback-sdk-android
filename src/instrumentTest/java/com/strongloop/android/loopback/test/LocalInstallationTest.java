@@ -33,7 +33,7 @@ public class LocalInstallationTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
+        adapter = createRestAdapter();
 
         packageVersionCode = 1;
         packageVersionName = "a-version-name";

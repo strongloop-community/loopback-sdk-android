@@ -22,7 +22,7 @@ public class ModelTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
+        adapter = createRestAdapter();
         repository = adapter.createRepository("widget");
     }
 

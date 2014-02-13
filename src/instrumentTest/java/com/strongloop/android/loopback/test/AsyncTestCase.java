@@ -11,6 +11,7 @@ import android.test.ActivityTestCase;
 
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
+import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.User;
 import com.strongloop.android.loopback.UserRepository;
 import com.strongloop.android.remoting.adapters.Adapter;
@@ -24,6 +25,10 @@ public class AsyncTestCase extends ActivityTestCase {
     // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
     // host computer.
     public static final String REST_SERVER_URL = "http://10.0.2.2:3000";
+
+    protected RestAdapter createRestAdapter() {
+        return new RestAdapter(getActivity(), REST_SERVER_URL);
+    }
 
     public abstract class AsyncTest implements Runnable {
 
