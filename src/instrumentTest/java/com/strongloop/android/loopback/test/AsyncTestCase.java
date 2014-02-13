@@ -2,8 +2,6 @@ package com.strongloop.android.loopback.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 
@@ -12,7 +10,6 @@ import android.test.ActivityTestCase;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.loopback.RestAdapter;
-import com.strongloop.android.loopback.User;
 import com.strongloop.android.loopback.UserRepository;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
@@ -30,28 +27,7 @@ public class AsyncTestCase extends ActivityTestCase {
         return new RestAdapter(getActivity(), REST_SERVER_URL);
     }
 
-    public abstract class AsyncTest implements Runnable {
-
-        private CountDownLatch signal;
-        private Throwable failException;
-
-        public Throwable getFailException() {
-            return failException;
-        }
-
-        public void notifyFailed(Throwable reason) {
-            failException = reason;
-            notifyFinished();
-        }
-
-        public void notifyFinished() {
-            signal.countDown();
-        }
-
-        private void setSignal(final CountDownLatch signal) {
-            this.signal = signal;
-        }
-
+    public abstract class AsyncTest extends AsyncTask {
 
         public JsonObjectCallback expectJsonResponse(String expectedData) {
             return new ExpectedDataCallback(expectedData);
@@ -130,17 +106,13 @@ public class AsyncTestCase extends ActivityTestCase {
     }
 
     public void doAsyncTest(final AsyncTest asyncTest) throws Throwable {
-        TestRunner runner = new TestRunner(asyncTest);
-        runTestOnUiThread(runner);
+        await(asyncTest);
+    }
 
-        boolean success = runner.await();
-        if (runner.getUncaughtException() != null) {
-            throw runner.getUncaughtException();
-        }
-        if (asyncTest.getFailException() != null) {
-            throw asyncTest.getFailException();
-        }
-        assertTrue(success);
+    public void await(final AsyncTask asyncTask) throws Throwable {
+        AsyncTask.Runner runner = new AsyncTask.Runner(asyncTask);
+        runTestOnUiThread(runner);
+        runner.await();
     }
 
     public JSONObject fetchJsonObjectById(final ModelRepository<?> repository, final Object id)
@@ -190,38 +162,4 @@ public class AsyncTestCase extends ActivityTestCase {
         return (T) remoteObject[0];
     }
 
-    private static class TestRunner implements Runnable {
-
-        private final AsyncTest asyncTest;
-        private final CountDownLatch signal = new CountDownLatch(1);
-        private Throwable uncaughtException;
-
-        public TestRunner(AsyncTest asyncTest) {
-            this.asyncTest = asyncTest;
-            this.asyncTest.setSignal(signal);
-        }
-
-        @Override
-        public void run() {
-            try {
-                asyncTest.run();
-            }
-            catch (Throwable t) {
-                uncaughtException = t;
-            }
-        }
-
-        public boolean await() {
-            try {
-                signal.await(30, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e) {
-            }
-            return signal.getCount() == 0;
-        }
-
-        public Throwable getUncaughtException() {
-            return uncaughtException;
-        }
-    }
 }
