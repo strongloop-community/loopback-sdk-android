@@ -1,3 +1,5 @@
+var path = require('path');
+var async = require('async');
 var loopback = require('loopback');
 
 var app = loopback();
@@ -60,6 +62,33 @@ app.model('User', {
 
 app.dataSource('mail', { connector: 'mail', defaultForType: 'mail' });
 loopback.autoAttach();
+
+// storage service
+
+app.dataSource('storage', {
+  connector: require('loopback-storage-service'),
+  provider: 'filesystem',
+  root: path.join(__dirname, 'storage')
+});
+
+var Container = app.dataSources.storage.createModel('container');
+app.model(Container);
+
+Container.destroyAll = function(cb) {
+  Container.getContainers(function(err, containers) {
+    if (err) return cb(err);
+    async.each(
+      containers,
+      function(item, next) {
+        Container.destroyContainer(item.name, next);
+      },
+      cb
+    );
+  });
+};
+
+Container.destroyAll.shared = true;
+Container.destroyAll.http = { verb: 'del', path: '/' }
 
 app.enableAuth();
 app.use(loopback.token({ model: app.models.AccessToken }));
