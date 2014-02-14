@@ -1,31 +1,41 @@
 package com.strongloop.android.loopback.test;
 
 import android.os.Environment;
+import android.test.MoreAsserts;
 import android.util.Log;
 
+import com.google.common.io.Files;
 import com.strongloop.android.loopback.Container;
 import com.strongloop.android.loopback.ContainerRepository;
 import com.strongloop.android.loopback.File;
-import com.strongloop.android.loopback.FileRepository;
 import com.strongloop.android.loopback.RestAdapter;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContractItem;
 
+import junit.framework.AssertionFailedError;
+
+import org.apache.http.client.HttpResponseException;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileTest extends AsyncTestCase {
     static final private String TAG = "FileTest";
+    private final byte[] binaryData = new byte[]{1, 2, 3};
 
     private RestAdapter adapter;
     private ContainerRepository containerRepo;
-    private FileRepository fileRepo;
+    private final java.io.File localDir = new java.io.File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            "test-data");
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         adapter = createRestAdapter();
         containerRepo = adapter.createRepository(ContainerRepository.class);
-        fileRepo = adapter.createRepository(FileRepository.class);
 
         try {
             destroyAllContainers();
@@ -34,6 +44,8 @@ public class FileTest extends AsyncTestCase {
         } catch (Throwable t) {
             throw new Exception(t);
         }
+
+        setupLocalDir();
     }
 
     public void testContainerCreateAndGet() throws Throwable {
@@ -86,70 +98,197 @@ public class FileTest extends AsyncTestCase {
                                 containerList.get(0).getName());
                         notifyFinished();
                     }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        notifyFailed(t);
-                    }
                 });
             }
         });
     }
 
-    public void testGetContainerAndFile() throws Throwable {
+    public void testFileUpload() throws Throwable {
         final Container container = givenContainer(containerRepo);
+        final String fileName = "a-file-name";
 
         doAsyncTest(new AsyncTest() {
-
             @Override
             public void run() {
-                container.getFile("f1.txt",
-                        new FileRepository.FileCallback() {
-
+                container.upload(fileName, binaryData, null,
+                        new ObjectTestCallback<File>() {
                             @Override
-                            public void onSuccess(File newFile) {
-                                assertNotNull("Null file", newFile);
-                                Log.i(TAG, "get file");
+                            public void onSuccess(File file) {
+                                assertEquals(fileName, file.getName());
                                 notifyFinished();
-                            }
-
-                            @Override
-                            public void onError(Throwable t) {
-                                notifyFailed(t);
                             }
                         });
             }
         });
     }
 
-
-    // download / upload a file
-    public void testDownloadUpload() throws Throwable {
-
-        final java.io.File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-
+    public void testFileDownload() throws Throwable {
+        final File file = givenFile(containerRepo, binaryData);
         doAsyncTest(new AsyncTest() {
-
             @Override
             public void run() {
-
-                fileRepo.download(storageDir.toString(), "container1", "nope.jpg",
-                        new FileRepository.FileCallback() {
-
+                file.download(new File.DownloadCallback() {
                     @Override
-                    public void onSuccess(File file) {
-                        assertNotNull("File is null", file);
+                    public void onSuccess(byte[] content) {
+                        MoreAsserts.assertEquals(binaryData, content);
                         notifyFinished();
                     }
 
                     @Override
-                    public void onError(Throwable t) {
-                        notifyFailed(t);
+                    public void onError(Throwable error) {
+                        notifyFailed(error);
                     }
-
                 });
             }
         });
+    }
+
+    public void testFileGet() throws Throwable {
+        final File file = givenFile(containerRepo, "a-file.txt");
+        final Container container = file.getContainerRef();
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                container.getFile("a-file.txt", new ObjectTestCallback<File>() {
+                    @Override
+                    public void onSuccess(File file) {
+                        assertEquals("a-file.txt", file.getName());
+                        assertEquals(container.getName(), file.getContainer());
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testFileDelete() throws Throwable {
+        final File file = givenFile(containerRepo, "a-file.txt");
+        final Container container = file.getContainerRef();
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                file.delete(new VoidTestCallback() {
+                    @Override
+                    public void onSuccess() {
+                        container.getFile("a-file.txt", new ObjectCallback<File>() {
+                            @Override
+                            public void onSuccess(File object) {
+                                notifyFailed(new AssertionFailedError(
+                                        "Get of deleted file should have failed"));
+                            }
+
+                            @Override
+                            public void onError(Throwable t) {
+                                Log.i(TAG, "Get deleted file result: " + t);
+                                HttpResponseException hre = (HttpResponseException) t;
+                                assertEquals(500, hre.getStatusCode());
+                                notifyFinished();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    public void testGetAllFiles() throws Throwable {
+        final File file =  givenFile(containerRepo, "a-file.txt");
+        final Container container = file.getContainerRef();
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+               container.getAllFiles(new ListTestCallback<File>() {
+                   @Override
+                   public void onSuccess(List<File> files) {
+                       String[] expectedNames = new String[]{"a-file.txt"};
+
+                       List<String> actualNames = new ArrayList<String>();
+                       for (File f : files) {
+                           actualNames.add(f.getName());
+                       }
+
+                       MoreAsserts.assertEquals(expectedNames, actualNames.toArray());
+                       notifyFinished();
+                   }
+               });
+            }
+        });
+    }
+
+    public void testFileUploadFromLocalFile() throws Throwable {
+        final Container container = givenContainer(containerRepo);
+        final java.io.File local = givenLocalFile(binaryData);
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                container.upload(local, new ObjectTestCallback<File>() {
+                    @Override
+                    public void onSuccess(File file) {
+                        assertEquals(local.getName(), file.getName());
+                        try {
+                            byte[] content = download(container, "a-file");
+                            MoreAsserts.assertEquals(binaryData, content);
+                        } catch (Throwable error) {
+                            notifyFailed(error);
+                        }
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testFileDownloadToLocalFile() throws Throwable {
+        final File file = givenFile(containerRepo, binaryData);
+        final java.io.File local = new java.io.File(localDir, "outfile");
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                file.download(local, new VoidTestCallback() {
+                    @Override
+                    public void onSuccess() {
+                        try {
+                            byte[] content = Files.toByteArray(local);
+                            MoreAsserts.assertEquals(binaryData, content);
+                            notifyFinished();
+                        } catch (IOException ex) {
+                            notifyFailed(ex);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private byte[] download(final Container container, final String fileName)
+            throws Throwable {
+        final List<byte[]> ref = new ArrayList<byte[]>(1);
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                container.createFileObject(fileName)
+                        .download(new File.DownloadCallback() {
+                            @Override
+                            public void onSuccess(byte[] content) {
+                                ref.set(0, content);
+                                notifyFinished();
+                            }
+
+                            @Override
+                            public void onError(Throwable error) {
+                                notifyFailed(error);
+                            }
+                        });
+            }
+        });
+
+        return ref.get(0);
     }
 
     private void destroyAllContainers() throws Throwable {
@@ -177,4 +316,33 @@ public class FileTest extends AsyncTestCase {
         });
     }
 
+    private void setupLocalDir() throws Exception {
+        String storageState = Environment.getExternalStorageState();
+        assertEquals("External Storage must be mounted",
+                Environment.MEDIA_MOUNTED, storageState);
+
+        if (localDir.exists()) {
+            cleanDir(localDir);
+            return;
+        }
+
+        if (!localDir.mkdirs())
+            throw new Error("Cannot create '" + localDir + "'");
+    }
+
+    private void cleanDir(java.io.File dir) {
+        for (java.io.File f: dir.listFiles()) {
+            if (f.isDirectory())
+                cleanDir(f);
+            else
+                f.delete();
+        }
+    }
+
+    public java.io.File givenLocalFile(byte[] content) throws IOException {
+        if (!localDir.exists()) throw new Error(localDir + " does not exist!");
+        java.io.File file = new java.io.File(localDir, "a-file.txt");
+        Files.write(content, file);
+        return file;
+    }
 }

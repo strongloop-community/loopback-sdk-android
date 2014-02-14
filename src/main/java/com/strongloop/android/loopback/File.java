@@ -1,105 +1,109 @@
 package com.strongloop.android.loopback;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import org.json.JSONObject;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
+import com.strongloop.android.loopback.callbacks.EmptyResponseParser;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
+import com.strongloop.android.remoting.Transient;
+import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
 
-public class File extends Model {
+import java.io.IOException;
+import java.util.Map;
+
+public class File extends VirtualObject {
 
     private String name;
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getName() {
-        return name;
-    }
+    public void setName(String name) { this.name = name; }
+
+    /**
+     * The name of the file, e.g. "image.gif"
+     * @return the name
+     */
+    public String getName() { return name; }
     
     private String url;
-    public void setUrl(String url) {
-        this.url = url;
-    }
+    public void setUrl(String url) { this.url = url; }
+
+    /**
+     * The URL of the file.
+     * @return the URL
+     */
     public String getUrl() {
         return url;
     }
     
-    private String container;
-    public void setContainer(String container) {
-        this.container = container;
+    private Container container;
+    @Transient
+    public void setContainerRef(Container container) { this.container = container; }
+    @Transient
+    public Container getContainerRef() { return container; }
+
+    /**
+     * Name of the container this file belongs to.
+     * @return the container name
+     */
+    public String getContainer() { return getContainerRef().getName(); }
+
+    public static interface DownloadCallback {
+        public void onSuccess(byte[] content);
+        public void onError(Throwable error);
     }
-    public String getContainer()
-    {
-        return container;
-    }
-    
-    /*** TODO - Restore when Container is in
-    private java.io.File file;
-    public void setFile(java.io.File file) {
-        this.file = file;
-    }
-    public java.io.File getFile() {
-        return file;
-    }
-    ***/
-    
-    // TODO - Move to Container
-    private java.io.File uploadFiles;
-    public void setUploadFiles(java.io.File file) {
-        uploadFiles = file;
-    }
-    public java.io.File getUploadFiles() {
-        return uploadFiles;
-    }
-    
-     /**
-     * Saves the File to the server.
-     * <p>
-     * This method calls {@link #toMap()} to determine which fields should be
-     * saved.
+
+    /**
+     * Download content of this file.
      * @param callback The callback to be executed when finished.
      */
-    public void upload(final Callback callback) {
-        
-        // TODO - Change to file when container is in
-        uploadFiles = new java.io.File(url + '/' + name);
-        
-        invokeMethod("upload", toMap(),
-                new Adapter.JsonObjectCallback() {
+    public void download(final DownloadCallback callback) {
+        invokeMethod("download", getCommonParams(), new Adapter.BinaryCallback() {
+            @Override
+            public void onSuccess(byte[] response) {
+                callback.onSuccess(response);
+            }
 
             @Override
             public void onError(Throwable t) {
                 callback.onError(t);
             }
+        });
+    }
+
+    /**
+     * Download content of this file to a local file.
+     * @param localFile Path to the local file.
+     * @param callback The callback to be executed when finished.
+     */
+    public void download(final java.io.File localFile, final VoidCallback callback) {
+        download(new DownloadCallback() {
+            @Override
+            public void onSuccess(byte[] content) {
+                try {
+                    Files.write(content, localFile);
+                    callback.onSuccess();
+                } catch (IOException ex) {
+                    callback.onError(ex);
+                }
+            }
 
             @Override
-            public void onSuccess(JSONObject response) {
-                Object id = response.opt("id");
-                if (id != null) {
-                    setId(id);
-                }
-                callback.onSuccess();
+            public void onError(Throwable error) {
+                callback.onError(error);
+
             }
         });
     }
 
-    public boolean save(byte[] content) throws IOException
-    {
-        boolean saved = false;
+    /**
+     * Delete this file.
+     * @param callback The callback to be executed when finished.
+     */
+    public void delete(final VoidCallback callback) {
+        invokeMethod("delete", getCommonParams(), new EmptyResponseParser(callback));
+    }
 
-        // TODO - Change to file when Container isin.
-        uploadFiles = new java.io.File( url + "/" + name);
-        
-        BufferedOutputStream bos = null;
-        
-        bos = new BufferedOutputStream( new FileOutputStream(uploadFiles) );
-            bos.write(content);
-            bos.flush();
-            bos.close();
-            saved = true;
-        return saved;
-    }        
+    private Map<String, String> getCommonParams() {
+        return ImmutableMap.of(
+                "container", getContainer(),
+                "name", getName());
+    }
 }

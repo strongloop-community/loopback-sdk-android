@@ -32,31 +32,46 @@ public class ContainerRepository extends RestRepository<Container> {
 
         String className = getClassName();
 
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl(), "POST"),
+        final String basePath = "/" + getNameForRestUrl();
+        contract.addItem(new RestContractItem(basePath, "POST"),
                 className + ".create");
 
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl(), "GET"),
+        contract.addItem(new RestContractItem(basePath, "GET"),
                 className + ".getAll");
 
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/:name", "GET"),
+        contract.addItem(new RestContractItem(basePath + "/:name", "GET"),
                 className + ".get");        
         
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/:name", "DELETE"),
+        contract.addItem(new RestContractItem(basePath + "/:name", "DELETE"),
                 className + ".prototype.remove");
         
         return contract;
     }
 
+    /**
+     * Create a new container.
+     * @param name The name of the container, must be unique.
+     * @param callback The callback to be executed when finished.
+     */
     public void create(String name, ObjectCallback<Container> callback) {
         invokeStaticMethod("create", ImmutableMap.of("name", name),
                 new JsonObjectParser<Container>(this, callback));
     }
-    
+
+    /**
+     * Get a named container
+     * @param containerName The container name.
+     * @param callback The callback to be executed when finished.
+     */
     public void get(String containerName, ObjectCallback<Container> callback) {
         invokeStaticMethod("get", ImmutableMap.of("name", containerName),
                 new JsonObjectParser<Container>(this, callback));
     }
-    
+
+    /**
+     * List all containers.
+     * @param callback The callback to be executed when finished.
+     */
     public void getAll(ListCallback<Container> callback) {
         invokeStaticMethod("getAll", null,
                 new JsonArrayParser<Container>(this, callback));

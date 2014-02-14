@@ -9,6 +9,7 @@ import android.test.ActivityTestCase;
 
 import com.strongloop.android.loopback.Container;
 import com.strongloop.android.loopback.ContainerRepository;
+import com.strongloop.android.loopback.File;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.loopback.RestAdapter;
@@ -143,6 +144,37 @@ public class AsyncTestCase extends ActivityTestCase {
                         notifyFinished();
                     }
                 });
+            }
+        });
+        return ref[0];
+    }
+
+    public File givenFile(final ContainerRepository repository, byte[] content)
+            throws Throwable {
+       return givenFile(repository, "a-file", content);
+    }
+
+    public File givenFile(final ContainerRepository repository, final String name)
+            throws Throwable {
+        return givenFile(repository, name, new byte[0]);
+    }
+
+    public File givenFile(final ContainerRepository repository, final String name, final byte[] content)
+            throws Throwable {
+        final File[] ref = new File[1];
+        final Container container = givenContainer(repository);
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                container.upload(name, content, null,
+                        new ObjectTestCallback<File>() {
+                            @Override
+                            public void onSuccess(File object) {
+                                ref[0] = object;
+                                notifyFinished();
+                            }
+                        });
             }
         });
         return ref[0];

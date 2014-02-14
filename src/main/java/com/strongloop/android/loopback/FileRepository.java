@@ -1,40 +1,42 @@
 package com.strongloop.android.loopback;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONObject;
-
+import com.google.common.collect.ImmutableMap;
+import com.strongloop.android.loopback.callbacks.JsonArrayParser;
+import com.strongloop.android.loopback.callbacks.JsonObjectParser;
+import com.strongloop.android.loopback.callbacks.ListCallback;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
 import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
+import com.strongloop.android.remoting.adapters.StreamParam;
 
-public class FileRepository extends ModelRepository<File> {
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FileRepository extends RestRepository<File> {
+    private final static String TAG = "FileRepository";
+
+    private Container container;
+
+    public Container getContainer() {
+        return container;
+    }
+    public String getContainerName() {
+        return getContainer().getName();
+    }
+
+    public void setContainer(Container value) {
+        container = value;
+    }
 
     public FileRepository() {
         super("file", File.class);
-    }
-    
-    public FileRepository(String nameForRestUrl) {
-   
-        super("file", nameForRestUrl, File.class);
-    }
-    
-    public interface FileCallback {
-        public void onSuccess(File file);
-        public void onError(Throwable t);
-    }
-    
-    public File createFile(String containerName, String fileName, String url) {
-        Map<String, Object>map = new HashMap<String, Object>();
-        map.put("name", fileName);
-        map.put("url", url);
-        map.put("container", containerName);
-        File file = createModel(map);
-        return file;
     }
     
     /**
@@ -47,79 +49,125 @@ public class FileRepository extends ModelRepository<File> {
      
     public RestContract createContract() {
         RestContract contract = super.createContract();
-        
+
+        String basePath = "/containers/:container";
         String className = getClassName();
-        
-        contract.addItem(RestContractItem.createMultipart(
-                "/" + getNameForRestUrl() + "/:container/upload", "POST"),
-                className + ".prototype.upload");
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
-                "/:container/download/:name", "GET"),
-                className + ".download");
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
-                "/:container/files/:name", "GET"),
+
+        contract.addItem(new RestContractItem(basePath + "/files/:name", "GET"),
                 className + ".get");
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + 
-                "/:container/:name", "DELETE"),
+
+        contract.addItem(new RestContractItem(basePath + "/files", "GET"),
+                className + ".getAll");
+
+        contract.addItem(
+                RestContractItem.createMultipart(basePath + "/upload", "POST"),
+                className + ".upload");
+
+        contract.addItem(new RestContractItem(basePath +  "/download/:name", "GET"),
+                className + ".prototype.download");
+
+        contract.addItem(new RestContractItem(basePath + "/files/:name", "DELETE"),
                 className + ".prototype.delete");
-       
+
         return contract;
     }
-   
-    public void get(String containerName, String name, final FileCallback callback) {
+
+    @Override
+    public File createObject(Map<String, ? extends Object> parameters) {
+        File file = super.createObject(parameters);
+        file.setContainerRef(container);
+        return file;
+    }
+
+    /**
+     * Upload a new file
+     * @param name The file name, must be unique within the container.
+     * @param content Content of the file.
+     * @param contentType Content type (optional).
+     * @param callback The callback to be executed when finished.
+     */
+    public void upload(String name, byte[] content, String contentType,
+                       ObjectCallback<File> callback) {
+        upload(name, new ByteArrayInputStream(content), contentType, callback);
+    }
+
+    /**
+     * Upload a new file
+     * @param name The file name, must be unique within the container.
+     * @param content Content of the file.
+     * @param contentType Content type (optional).
+     * @param callback The callback to be executed when finished.
+     */
+    public void upload(String name, InputStream content, String contentType,
+                       final ObjectCallback<File> callback) {
+
+        StreamParam param = new StreamParam(content, name, contentType);
+        invokeStaticMethod("upload",
+                ImmutableMap.of("container", getContainerName(), "file", param),
+                new UploadResponseParser(this, callback));
+    }
+
+    /**
+     * Upload a new file
+     * @param localFile The local file to upload.
+     * @param callback The callback to be executed when finished.
+     */
+    public void upload(java.io.File localFile, final ObjectCallback<File> callback) {
+        invokeStaticMethod("upload",
+                ImmutableMap.of("container", getContainerName(), "file", localFile),
+                new UploadResponseParser(this, callback));
+    }
+
+    /**
+     * Get file by name
+     * @param name The name of the file to get.
+     * @param callback The callback to be executed when finished.
+     */
+    public void get(String name, final ObjectCallback<File> callback) {
         final HashMap<String, Object> params = new HashMap<String, Object>();
 
-        params.put("container", containerName);
+        params.put("container", getContainerName());
         params.put("name", name);
-        invokeStaticMethod("get", params, new Adapter.JsonObjectCallback() {
-            
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);;
-            }
-            
-            @Override
-            public void onSuccess(JSONObject response) {
-                File file  = createModel(JsonUtil.fromJson(response));                
-                callback.onSuccess(file);
-            }
-        });
-                
+        invokeStaticMethod("get", params,
+                new JsonObjectParser<File>(this, callback));
     }
-    
-    public void download(final String downloadPath,
-                         final String serverContainer,
-                         final String fileName,
-                         final FileCallback callback) {
-        final HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("container", serverContainer);
-        params.put("name", fileName);
-                
-        invokeStaticMethod("download", params,
-                new Adapter.BinaryCallback() {
 
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);
-            }
-
-            @Override
-            public void onSuccess(byte[] response) {
-                File newFile;
-                try {
-                    newFile = createFile(downloadPath, serverContainer, fileName, response);
-                    callback.onSuccess(newFile);
-                } catch (IOException e) {
-                    callback.onError(e);
-                }
-            }
-        });
-        
+    /**
+     * List all files in the container.
+     * @param callback The callback to be executed when finished.
+     */
+    public void getAll(ListCallback<File> callback) {
+        invokeStaticMethod("getAll",
+                ImmutableMap.of("container", getContainerName()),
+                new JsonArrayParser<File>(this, callback));
     }
-    
-    protected File createFile(String downloadPath, String serverContainer, String fileName, byte[] byteBuffer) throws IOException {
-        File newFile = createFile(serverContainer, fileName, downloadPath);
-        newFile.save(byteBuffer);
-        return newFile;
+
+    private class UploadResponseParser extends Adapter.JsonObjectCallback {
+        private final FileRepository repository;
+        private final ObjectCallback<File> callback;
+
+        private UploadResponseParser(FileRepository repository, ObjectCallback<File> callback) {
+            this.repository = repository;
+            this.callback = callback;
+        }
+
+        @Override
+        public void onSuccess(JSONObject response) {
+            try {
+                JSONObject data = response.getJSONObject("result")
+                        .getJSONObject("files")
+                        .getJSONArray("file")
+                        .getJSONObject(0);
+                callback.onSuccess(
+                        repository.createObject(JsonUtil.fromJson(data)));
+            } catch (JSONException e) {
+                callback.onError(e);
+            }
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            callback.onError(t);
+        }
     }
 }
