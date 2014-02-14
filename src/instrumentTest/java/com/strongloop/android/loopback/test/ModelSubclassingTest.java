@@ -5,6 +5,8 @@ import android.util.Log;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.ModelRepository;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
 
 import org.json.JSONObject;
 
@@ -72,7 +74,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                model.save(new ModelCallback() {
+                model.save(new VoidTestCallback() {
 
                     @Override
                     public void onSuccess() {
@@ -95,11 +97,11 @@ public class ModelSubclassingTest extends AsyncTestCase {
             @Override
             public void run() {
                 widgetRepository.findById(lastId[0],
-                        new FindModelCallback<Widget>() {
+                        new ObjectTestCallback<Widget>() {
 
                     @Override
                     public void onSuccess(Widget model) {
-                        model.destroy(new ModelCallback() {
+                        model.destroy(new VoidTestCallback() {
 
                             @Override
                             public void onSuccess() {
@@ -118,7 +120,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                widgetRepository.findById(2, new FindModelCallback<Widget>() {
+                widgetRepository.findById(2, new ObjectTestCallback<Widget>() {
 
                     @Override
                     public void onSuccess(Widget model) {
@@ -138,7 +140,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                widgetRepository.findAll(new FindAllModelsCallback<Widget>() {
+                widgetRepository.findAll(new ListTestCallback<Widget>() {
 
                     @Override
                     public void onSuccess(List<Widget> list) {
@@ -165,8 +167,8 @@ public class ModelSubclassingTest extends AsyncTestCase {
     public void testUpdate() throws Throwable {
         doAsyncTest(new AsyncTest() {
 
-            ModelRepository.FindCallback<Widget> verify =
-                    new FindModelCallback<Widget>() {
+            ObjectCallback<Widget> verify =
+                    new ObjectTestCallback<Widget>() {
 
                 @Override
                 public void onSuccess(Widget model) {
@@ -176,7 +178,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
                     assertEquals("Invalid bars", 1, model.getBars());
 
                     model.setName("Bar");
-                    model.save(new ModelCallback() {
+                    model.save(new VoidTestCallback() {
 
                         @Override
                         public void onSuccess() {
@@ -186,7 +188,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
                 }
             };
 
-            Model.Callback findAgain = new ModelCallback() {
+            VoidCallback findAgain = new VoidTestCallback() {
 
                 @Override
                 public void onSuccess() {
@@ -194,8 +196,8 @@ public class ModelSubclassingTest extends AsyncTestCase {
                 }
             };
 
-            ModelRepository.FindCallback<Widget> update =
-                    new FindModelCallback<Widget>() {
+            ObjectCallback<Widget> update =
+                    new ObjectTestCallback<Widget>() {
 
                 @Override
                 public void onSuccess(Widget model) {

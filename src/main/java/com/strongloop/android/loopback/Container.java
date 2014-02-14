@@ -1,11 +1,9 @@
 package com.strongloop.android.loopback;
 
-import org.json.JSONObject;
-
-import com.strongloop.android.remoting.adapters.Adapter;
+import com.strongloop.android.remoting.VirtualObject;
 
 
-public class Container extends Model {
+public class Container extends VirtualObject {
 
     private String name;
     public void setName(String name) {
@@ -13,27 +11,17 @@ public class Container extends Model {
     }
     public String getName() {
         return name;
-    }    
-
-    public void delete(final Callback callback) {
-        invokeMethod("remove", toMap(), 
-            new Adapter.JsonObjectCallback() {
-                
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);                    
-            }
-            
-            @Override
-            public void onSuccess(JSONObject response) {
-                callback.onSuccess();
-            }
-        });
     }
-    
+
+    public File createFile(String name, String url) {
+        return getFileRepository().createFile(getName(), name, url);
+    }
+
     public void getFile( String fileName, final FileRepository.FileCallback callback) {
-        ContainerRepository containerRepo = (ContainerRepository) getRepository();
-        FileRepository fileRepo = containerRepo.getFileRepository();
-        fileRepo.get(getName(), fileName, callback);
+        getFileRepository().get(getName(), fileName, callback);
+    }
+
+    private FileRepository getFileRepository() {
+        return new FileRepository(getName());
     }
 }

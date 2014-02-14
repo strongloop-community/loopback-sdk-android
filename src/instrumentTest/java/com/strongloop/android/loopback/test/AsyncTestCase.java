@@ -7,10 +7,16 @@ import org.json.JSONObject;
 
 import android.test.ActivityTestCase;
 
+import com.strongloop.android.loopback.Container;
+import com.strongloop.android.loopback.ContainerRepository;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.UserRepository;
+import com.strongloop.android.loopback.callbacks.ListCallback;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
+import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
 
@@ -58,43 +64,6 @@ public class AsyncTestCase extends ActivityTestCase {
                 notifyFinished();
             }
         };
-
-        /**
-         * Model.Callback that reports error as test failures.
-         */
-        public abstract class ModelCallback implements Model.Callback {
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
-
-        /**
-         * ModelRepository.FindCallback<T> that reports errors as test failures.
-         * @param <T> The Model type.
-         */
-        public abstract class FindModelCallback<T extends Model>
-                implements ModelRepository.FindCallback<T> {
-
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
-
-        /**
-         * ModelRepository.FindAllCallback<T> that reports errors
-         * as test failures.
-         * @param <T> The Model type.
-         */
-        public abstract class FindAllModelsCallback<T extends Model>
-                implements ModelRepository.FindAllCallback<T> {
-
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
 
         public abstract class LoginTestCallback implements UserRepository.LoginCallback {
 
@@ -150,7 +119,7 @@ public class AsyncTestCase extends ActivityTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                repository.findById(id, new FindModelCallback<T>() {
+                repository.findById(id, new ObjectTestCallback<T>() {
                     @Override
                     public void onSuccess(T model) {
                         remoteObject[0] = model;
@@ -162,4 +131,20 @@ public class AsyncTestCase extends ActivityTestCase {
         return (T) remoteObject[0];
     }
 
+    public Container givenContainer(final ContainerRepository repository) throws Throwable {
+        final Container[] ref = new Container[1];
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                repository.create("a-container", new ObjectTestCallback<Container>() {
+                    @Override
+                    public void onSuccess(Container object) {
+                        ref[0] = object;
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+        return ref[0];
+    }
 }

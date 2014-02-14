@@ -1,5 +1,10 @@
 package com.strongloop.android.loopback.test;
 
+import com.strongloop.android.loopback.callbacks.ListCallback;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
+import com.strongloop.android.remoting.VirtualObject;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -24,6 +29,43 @@ public abstract class AsyncTask implements Runnable {
     protected void notifyFinished() {
         signal.countDown();
     }
+
+    /**
+     * VoidCallback that reports error as test failures.
+     */
+    public abstract class VoidTestCallback  implements VoidCallback {
+        @Override
+        public void onError(Throwable t) {
+            notifyFailed(t);
+        }
+    }
+
+    /**
+     * ObjectCallback<T> that reports errors as test failures.
+     * @param <T> The Model type.
+     */
+    public abstract class ObjectTestCallback<T extends VirtualObject>
+            implements ObjectCallback<T> {
+
+        @Override
+        public void onError(Throwable t) {
+            notifyFailed(t);
+        }
+    }
+
+    /**
+     * ListCallback<T> that reports errors as test failures.
+     * @param <T> The Model type.
+     */
+    public abstract class ListTestCallback<T extends VirtualObject>
+            implements ListCallback<T> {
+
+        @Override
+        public void onError(Throwable t) {
+            notifyFailed(t);
+        }
+    }
+
 
     public static class Runner implements Runnable {
 

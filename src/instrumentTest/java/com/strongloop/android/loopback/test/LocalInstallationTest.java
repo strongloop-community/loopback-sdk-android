@@ -66,7 +66,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         assertNotNull(install.getId());
@@ -93,7 +93,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         notifyFinished();
@@ -132,7 +132,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         notifyFinished();
@@ -169,7 +169,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         final Object newId = install.getId();

@@ -68,7 +68,7 @@ public class RestAdapter
      * The class must have a public no-argument constructor.
      * @return A new repository instance.
      */
-    public <U extends ModelRepository> U createRepository(
+    public <U extends RestRepository> U createRepository(
             Class<U> repositoryClass) {
         U repository = null;
         try {
@@ -84,24 +84,7 @@ public class RestAdapter
         return repository;
     }
 
-    public <U extends ModelRepository> U createRepository(
-            Class<U> repositoryClass, String nameForRestUrl) {
-        U repository = null;
-        try {
-            repository = repositoryClass.newInstance();
-            repository.setAdapter(this);
-            repository.setNameForRestUrl(nameForRestUrl);
-        }
-        catch (Exception e) {
-            IllegalArgumentException ex = new IllegalArgumentException();
-            ex.initCause(e);
-            throw ex;
-        }
-        attachModelRepository(repository);
-        return repository;
-    }
-
-    private void attachModelRepository(ModelRepository repository) {
+    private void attachModelRepository(RestRepository repository) {
         getContract().addItemsFromContract(repository.createContract());
         repository.setAdapter(this);
     }
