@@ -33,7 +33,12 @@ public abstract class AsyncTask implements Runnable {
     /**
      * VoidCallback that reports error as test failures.
      */
-    public abstract class VoidTestCallback  implements VoidCallback {
+    public class VoidTestCallback implements VoidCallback {
+        @Override
+        public void onSuccess() {
+            notifyFinished();
+        }
+
         @Override
         public void onError(Throwable t) {
             notifyFailed(t);

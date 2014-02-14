@@ -101,14 +101,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
 
                     @Override
                     public void onSuccess(Widget model) {
-                        model.destroy(new VoidTestCallback() {
-
-                            @Override
-                            public void onSuccess() {
-                                assertTrue(true);
-                                notifyFinished();
-                            }
-                        });
+                        model.destroy(new VoidTestCallback());
                     }
                 });
             }
@@ -178,13 +171,7 @@ public class ModelSubclassingTest extends AsyncTestCase {
                     assertEquals("Invalid bars", 1, model.getBars());
 
                     model.setName("Bar");
-                    model.save(new VoidTestCallback() {
-
-                        @Override
-                        public void onSuccess() {
-                            notifyFinished();
-                        }
-                    });
+                    model.save(new VoidTestCallback());
                 }
             };
 

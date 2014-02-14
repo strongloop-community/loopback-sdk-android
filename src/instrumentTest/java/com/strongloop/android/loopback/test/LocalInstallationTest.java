@@ -93,12 +93,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new VoidTestCallback() {
-                    @Override
-                    public void onSuccess() {
-                        notifyFinished();
-                    }
-                });
+                install.save(new VoidTestCallback());
             }
         });
 

@@ -72,14 +72,7 @@ public class ModelTest extends AsyncTestCase {
 
                     @Override
                     public void onSuccess(Model model) {
-                        model.destroy(new VoidTestCallback() {
-
-                            @Override
-                            public void onSuccess() {
-                                assertTrue(true);
-                                notifyFinished();
-                            }
-                        });
+                        model.destroy(new VoidTestCallback());
                     }
 
                 });
@@ -150,13 +143,7 @@ public class ModelTest extends AsyncTestCase {
                     assertEquals("Invalid bars", 1, model.get("bars"));
 
                     model.put("name", "Bar");
-                    model.save(new VoidTestCallback() {
-
-                        @Override
-                        public void onSuccess() {
-                            notifyFinished();
-                        }
-                    });
+                    model.save(new VoidTestCallback());
                 }
             };
 
