@@ -33,7 +33,7 @@ public class LocalInstallationTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
+        adapter = createRestAdapter();
 
         packageVersionCode = 1;
         packageVersionName = "a-version-name";
@@ -66,7 +66,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         assertNotNull(install.getId());
@@ -93,12 +93,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
-                    @Override
-                    public void onSuccess() {
-                        notifyFinished();
-                    }
-                });
+                install.save(new VoidTestCallback());
             }
         });
 
@@ -132,7 +127,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         notifyFinished();
@@ -169,7 +164,7 @@ public class LocalInstallationTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                install.save(new ModelCallback() {
+                install.save(new VoidTestCallback() {
                     @Override
                     public void onSuccess() {
                         final Object newId = install.getId();

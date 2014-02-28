@@ -60,14 +60,13 @@ public class UserRepository extends ModelRepository<User> {
         map.put("email", email);
         map.put("password", password);
         User user = createModel(map);
-        user.setRepository(this);
         return user;
     }
     
      /**
      * Creates a {@link RestContract} representing the user type's custom
      * routes. Used to extend an {@link Adapter} to support user. Calls
-     * super {@link ModelRepository) createContract first. 
+     * super {@link ModelRepository} createContract first.
      *
      * @return A {@link RestContract} for this model type.
      */

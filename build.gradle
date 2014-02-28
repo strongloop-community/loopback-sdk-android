@@ -51,13 +51,12 @@ configurations {
 
 dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
+    compile 'com.google.guava:guava:15.0'
 
     def strongRemoting = 'com.strongloop:strong-remoting-android:' + strongRemotingVersion
     compile(strongRemoting + '@jar') { transitive = true }
     subJavadocs(strongRemoting + ':javadoc') { transitive = false }
     subSources(strongRemoting + ':sources') { transitive = false }
-
-    instrumentTestCompile 'com.google.guava:guava:15.0'
 }
 
 task unpackJavadocIncludes(type: Sync) {

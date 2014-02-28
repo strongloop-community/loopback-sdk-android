@@ -1,16 +1,19 @@
 package com.strongloop.android.loopback;
 
+import java.util.TimeZone;
+
+import org.apache.http.client.HttpResponseException;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import org.apache.http.client.HttpResponseException;
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.util.TimeZone;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
+import com.strongloop.android.remoting.BeanUtil;
 
 /**
  * This class represents the Installation instance assigned to
@@ -265,13 +268,13 @@ public class LocalInstallation {
      * Subsequent calls updates the existing record with the stored id.
      * @param callback The callback to be executed when finished.
      */
-    public void save(final Model.Callback callback) {
+    public void save(final VoidCallback callback) {
         ModelRepository<Model> repository =
                 loopbackAdapter.createRepository("installation");
         final Model model = repository.createModel(
                 BeanUtil.getProperties(this, false, false));
 
-        model.save(new Model.Callback() {
+        model.save(new VoidCallback() {
             @Override
             public void onSuccess() {
                 id = model.getId();

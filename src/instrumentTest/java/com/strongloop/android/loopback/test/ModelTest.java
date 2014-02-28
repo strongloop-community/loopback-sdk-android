@@ -5,6 +5,8 @@ import android.util.Log;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.ModelRepository;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
 
 import org.json.JSONObject;
 
@@ -22,7 +24,7 @@ public class ModelTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
+        adapter = createRestAdapter();
         repository = adapter.createRepository("widget");
     }
 
@@ -43,7 +45,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                model.save(new ModelCallback() {
+                model.save(new VoidTestCallback() {
 
                     @Override
                     public void onSuccess() {
@@ -66,18 +68,11 @@ public class ModelTest extends AsyncTestCase {
             @Override
             public void run() {
                 repository.findById(lastId[0],
-                        new FindModelCallback<Model>() {
+                        new ObjectTestCallback<Model>() {
 
                     @Override
                     public void onSuccess(Model model) {
-                        model.destroy(new ModelCallback() {
-
-                            @Override
-                            public void onSuccess() {
-                                assertTrue(true);
-                                notifyFinished();
-                            }
-                        });
+                        model.destroy(new VoidTestCallback());
                     }
 
                 });
@@ -90,7 +85,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                repository.findById(2, new FindModelCallback<Model>() {
+                repository.findById(2, new ObjectTestCallback<Model>() {
 
                     @Override
                     public void onSuccess(Model model) {
@@ -110,7 +105,7 @@ public class ModelTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                repository.findAll(new FindAllModelsCallback<Model>() {
+                repository.findAll(new ListTestCallback<Model>() {
 
                     @Override
                     public void onSuccess(List<Model> list) {
@@ -137,8 +132,8 @@ public class ModelTest extends AsyncTestCase {
     public void testUpdate() throws Throwable {
         doAsyncTest(new AsyncTest() {
 
-            ModelRepository.FindCallback<Model> verify =
-                    new FindModelCallback<Model>() {
+            ObjectCallback<Model> verify =
+                    new ObjectTestCallback<Model>() {
 
                 @Override
                 public void onSuccess(Model model) {
@@ -148,17 +143,11 @@ public class ModelTest extends AsyncTestCase {
                     assertEquals("Invalid bars", 1, model.get("bars"));
 
                     model.put("name", "Bar");
-                    model.save(new ModelCallback() {
-
-                        @Override
-                        public void onSuccess() {
-                            notifyFinished();
-                        }
-                    });
+                    model.save(new VoidTestCallback());
                 }
             };
 
-            Model.Callback findAgain = new ModelCallback() {
+            VoidCallback findAgain = new VoidTestCallback() {
 
                 @Override
                 public void onSuccess() {
@@ -166,8 +155,8 @@ public class ModelTest extends AsyncTestCase {
                 }
             };
 
-            ModelRepository.FindCallback<Model> update =
-                    new FindModelCallback<Model>() {
+            ObjectCallback<Model> update =
+                    new ObjectTestCallback<Model>() {
 
                 @Override
                 public void onSuccess(Model model) {

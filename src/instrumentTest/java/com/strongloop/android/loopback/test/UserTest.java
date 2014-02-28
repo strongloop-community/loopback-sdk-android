@@ -6,7 +6,6 @@ import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.UserRepository;
 import com.strongloop.android.loopback.User;
 import com.strongloop.android.loopback.AccessToken;
-import com.strongloop.android.loopback.AccessTokenRepository;
 
 /**
  * Created by gmxtian on 2/7/14.
@@ -23,7 +22,7 @@ public class UserTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        adapter = new RestAdapter(getActivity(), REST_SERVER_URL);
+        adapter = createRestAdapter();
         userRepo = adapter.createRepository(UserRepository.class);
     }
 
@@ -41,7 +40,7 @@ public class UserTest extends AsyncTestCase {
 
             @Override
             public void run() {
-                user.save(new ModelCallback() {
+                user.save(new VoidTestCallback() {
 
                     @Override
                     public void onSuccess() {
