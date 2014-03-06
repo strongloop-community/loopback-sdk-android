@@ -13,11 +13,6 @@ import com.strongloop.android.loopback.File;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.ModelRepository;
 import com.strongloop.android.loopback.RestAdapter;
-import com.strongloop.android.loopback.UserRepository;
-import com.strongloop.android.loopback.callbacks.ListCallback;
-import com.strongloop.android.loopback.callbacks.ObjectCallback;
-import com.strongloop.android.loopback.callbacks.VoidCallback;
-import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
 
@@ -65,14 +60,6 @@ public class AsyncTestCase extends ActivityTestCase {
                 notifyFinished();
             }
         };
-
-        public abstract class LoginTestCallback implements UserRepository.LoginCallback {
-
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
     }
 
     public void doAsyncTest(final AsyncTest asyncTest) throws Throwable {

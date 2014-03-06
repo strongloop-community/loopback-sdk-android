@@ -54,6 +54,8 @@ public class ModelRepository<T extends Model> extends RestRepository<T> {
      * Creates a new Repository, associating it with the named remote class.
      * @param className The remote class name.
      * @param nameForRestUrl The pluralized class name to use in REST transport.
+     *                       Use {@code null} for the default value, which is the plural
+     *                       form of className.
      * @param modelClass The Model class. It must have a public no-argument
      * constructor.
      */
