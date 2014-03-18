@@ -1,13 +1,8 @@
 package com.strongloop.android.loopback.test;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.test.mock.MockContext;
-import android.test.mock.MockPackageManager;
-import android.util.Log;
 import android.test.MoreAsserts;
+import android.util.Log;
 
 import com.google.common.collect.ImmutableMap;
 import com.strongloop.android.loopback.LocalInstallation;
@@ -19,32 +14,25 @@ import com.strongloop.android.remoting.adapters.Adapter;
 import java.util.ArrayList;
 import java.util.TimeZone;
 
-import static android.test.MoreAsserts.assertEquals;
-
 public class LocalInstallationTest extends AsyncTestCase {
     private final static String TAG = LocalInstallationTest.class.getSimpleName();
 
     private RestAdapter adapter;
-    private TestContext context;
-
-    int packageVersionCode;
-    String packageVersionName;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         adapter = createRestAdapter();
 
-        packageVersionCode = 1;
-        packageVersionName = "a-version-name";
-        context = new TestContext();
-        context.clearSharedPreferences();
+        testContext.setPackageVersionCode(1);
+        testContext.clearSharedPreferences(
+                LocalInstallation.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     public void testConstructorFillsProperties() throws Throwable {
-        packageVersionName = "1.2.3";
+        testContext.setPackageVersionName("1.2.3");
 
-        final LocalInstallation install = new LocalInstallation(context, adapter);
+        final LocalInstallation install = new LocalInstallation(testContext, adapter);
 
         assertEquals("deviceType", "android", install.getDeviceType());
         assertEquals("status", "Active", install.getStatus());
@@ -53,7 +41,7 @@ public class LocalInstallationTest extends AsyncTestCase {
     }
 
     public void testServerRoundTrip() throws Throwable {
-        final LocalInstallation install = new LocalInstallation(context, adapter);
+        final LocalInstallation install = new LocalInstallation(testContext, adapter);
         final String[] subscriptions = {"all"};
 
         install.setAppId("an-app-id");
@@ -97,7 +85,7 @@ public class LocalInstallationTest extends AsyncTestCase {
             }
         });
 
-        LocalInstallation copy = new LocalInstallation(context, adapter);
+        LocalInstallation copy = new LocalInstallation(testContext, adapter);
         assertEquals(install.getId(), copy.getId());
     }
 
@@ -105,17 +93,17 @@ public class LocalInstallationTest extends AsyncTestCase {
         final LocalInstallation install = aLocalInstallation();
         install.setDeviceToken("a-device-token");
 
-        LocalInstallation copy = new LocalInstallation(context, adapter);
+        LocalInstallation copy = new LocalInstallation(testContext, adapter);
         assertEquals(install.getDeviceToken(), copy.getDeviceToken());
     }
 
     public void testInvalidationOfDeviceTokenWithNewVersion() throws Throwable {
-        packageVersionCode = 1;
+        testContext.setPackageVersionCode(1);
         LocalInstallation install = aLocalInstallation();
         install.setDeviceToken("a-device-token");
 
-        packageVersionCode = 2;
-        LocalInstallation copy = new LocalInstallation(context, adapter);
+        testContext.setPackageVersionCode(2);
+        LocalInstallation copy = new LocalInstallation(testContext, adapter);
 
         assertNull(copy.getDeviceToken());
     }
@@ -187,7 +175,7 @@ public class LocalInstallationTest extends AsyncTestCase {
     }
 
     LocalInstallation aLocalInstallation() {
-        final LocalInstallation install = new LocalInstallation(context, adapter);
+        final LocalInstallation install = new LocalInstallation(testContext, adapter);
         install.setAppId("an-app-id");
         install.setAppVersion("an-app-version");
         install.setUserId("an-user-id");
@@ -195,47 +183,4 @@ public class LocalInstallationTest extends AsyncTestCase {
         return install;
     }
 
-    class TestContext extends MockContext {
-        @Override
-        public String getPackageName() {
-            return "a-package-name";
-        }
-
-        @Override
-        public PackageManager getPackageManager() {
-            return new TestPackageManager();
-        }
-
-        @Override
-        public SharedPreferences getSharedPreferences(String name, int mode) {
-            return getRealContext().getSharedPreferences(name, mode);
-        }
-
-        public void clearSharedPreferences() {
-            getRealContext()
-                    .getSharedPreferences(
-                            LocalInstallation.SHARED_PREFERENCES_NAME,
-                            Context.MODE_PRIVATE)
-                    .edit().clear().commit();
-        }
-
-        private Context getRealContext() {
-            return getInstrumentation().getContext();
-        }
-    }
-
-    class TestPackageManager extends MockPackageManager {
-        @Override
-        public PackageInfo getPackageInfo(String packageName, int flags)
-                throws NameNotFoundException {
-
-            if (packageName != "a-package-name")
-                throw new NameNotFoundException();
-
-            PackageInfo info = new PackageInfo();
-            info.versionName = packageVersionName;
-            info.versionCode = packageVersionCode;
-            return info;
-        }
-    }
 }
