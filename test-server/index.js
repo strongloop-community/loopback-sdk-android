@@ -64,11 +64,14 @@ app.dataSource('mail', { connector: 'mail', defaultForType: 'mail' });
 loopback.autoAttach();
 
 // storage service
-
+var fs = require('fs');
+var storage = path.join(__dirname, 'storage');
+if (!fs.existsSync(storage))
+  fs.mkdirSync(storage);
 app.dataSource('storage', {
   connector: require('loopback-storage-service'),
   provider: 'filesystem',
-  root: path.join(__dirname, 'storage')
+  root: storage
 });
 
 var Container = app.dataSources.storage.createModel('container');

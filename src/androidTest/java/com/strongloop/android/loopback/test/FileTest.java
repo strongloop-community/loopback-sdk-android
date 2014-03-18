@@ -229,17 +229,15 @@ public class FileTest extends AsyncTestCase {
                     @Override
                     public void onSuccess(File file) {
                         assertEquals(local.getName(), file.getName());
-                        try {
-                            byte[] content = download(container, "a-file");
-                            MoreAsserts.assertEquals(binaryData, content);
-                        } catch (Throwable error) {
-                            notifyFailed(error);
-                        }
                         notifyFinished();
                     }
                 });
             }
         });
+
+        Log.i(TAG, "Downloading the uploaded file");
+        byte[] content = download(container, local.getName());
+        MoreAsserts.assertEquals(binaryData, content);
     }
 
     public void testFileDownloadToLocalFile() throws Throwable {
@@ -268,6 +266,7 @@ public class FileTest extends AsyncTestCase {
     private byte[] download(final Container container, final String fileName)
             throws Throwable {
         final List<byte[]> ref = new ArrayList<byte[]>(1);
+        ref.add(null);
 
         await(new AsyncTask() {
             @Override

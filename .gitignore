@@ -35,3 +35,4 @@ proguard/
 .DS_Store
 
 node_modules
+/test-server/storage/
