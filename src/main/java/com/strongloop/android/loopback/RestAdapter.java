@@ -36,6 +36,10 @@ public class RestAdapter
         getClient().addHeader("Authorization", null);
     }
 
+    public Context getApplicationContext() {
+        return context;
+    }
+
     /**
      * Creates a new {@link ModelRepository} representing the named model type.
      * @param name The model name.

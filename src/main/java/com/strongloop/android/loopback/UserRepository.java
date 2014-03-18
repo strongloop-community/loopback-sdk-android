@@ -43,10 +43,6 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
 
     private AccessTokenRepository accessTokenRepository;
 
-    private RestAdapter getRestAdapter() {
-        return (RestAdapter) getAdapter();
-    }
-
     private AccessTokenRepository getAccessTokenRepository() {
         if (accessTokenRepository == null) {
             accessTokenRepository = getRestAdapter()
@@ -197,7 +193,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
 
             @Override
             public void onSuccess(String response) {
-                RestAdapter radapter = (RestAdapter)getAdapter();
+                RestAdapter radapter = getRestAdapter();
                 radapter.clearAccessToken();
                 callback.onSuccess();
             }
