@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
 import com.strongloop.android.loopback.callbacks.VoidCallback;
 import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
@@ -53,6 +54,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
     private AccessTokenRepository accessTokenRepository;
     private Object currentUserId;
     private boolean isCurrentUserIdLoaded;
+    private U cachedCurrentUser;
 
     private AccessTokenRepository getAccessTokenRepository() {
         if (accessTokenRepository == null) {
@@ -85,6 +87,9 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
         super(className, nameForRestUrl, userClass);
     }
 
+    /**
+     * @return Id of the currently logged in user. null when there is no user logged in.
+     */
     public Object getCurrentUserId() {
         loadCurrentUserIdIfNotLoaded();
         return currentUserId;
@@ -92,7 +97,59 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
 
     protected void setCurrentUserId(Object currentUserId) {
         this.currentUserId = currentUserId;
+        cachedCurrentUser = null;
         saveCurrentUserId();
+    }
+
+    /**
+     * Fetch the data of the currently logged in user. Invokes
+     * {@code callback.onSuccess(null)} when no user is logged in.
+     * The data is cached, see {@link #getCachedCurrentUser()}
+     * @param callback success/error callback
+     */
+    public void findCurrentUser(final ObjectCallback<U> callback) {
+        if (getCurrentUserId() == null) {
+            callback.onSuccess(null);
+            return;
+        }
+
+        this.findById(getCurrentUserId(), new ObjectCallback<U>() {
+            @Override
+            public void onSuccess(U user) {
+                cachedCurrentUser = user;
+                callback.onSuccess(user);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    /**
+     * Get the cached value of the currently logged in user.
+     * The value is updated by {@link #findCurrentUser(ObjectCallback)},
+     * {@link #loginUser(String, String, LoginCallback)} and
+     * {@link #logout(VoidCallback)}
+     *
+     * <p>
+     * The typical usage:
+     * <ul>
+     * <li>
+     * At the application start up and after a successfull login,
+     * {@link #findCurrentUser(ObjectCallback)} is called to pre-load the data.
+     * </li>
+     * <li>
+     * All other places call {@link #getCachedCurrentUser()} to access the data
+     * of the currently logged in user.
+     * </li>
+     * </ul>
+     *
+     * @return The current user or null.
+     */
+    public U getCachedCurrentUser() {
+        return cachedCurrentUser;
     }
 
     /**

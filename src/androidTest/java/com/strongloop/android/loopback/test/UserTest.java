@@ -138,6 +138,62 @@ public class UserTest extends AsyncTestCase {
         assertEquals(customer.getId(), anotherRepo.getCurrentUserId());
     }
 
+    public void testFindCurrentUserReturnsCorrectValue() throws Throwable {
+        final Customer customer = givenLoggedInCustomer();
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                customerRepo.findCurrentUser(new ObjectTestCallback<Customer>() {
+                    @Override
+                    public void onSuccess(Customer current) {
+                        assertEquals("id", customer.getId(), current.getId());
+                        assertEquals("email", customer.getEmail(), current.getEmail());
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testFindCurrentUserReturnsNullWhenNotLoggedIn() throws Throwable {
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                customerRepo.findCurrentUser(new ObjectTestCallback<Customer>() {
+                    @Override
+                    public void onSuccess(Customer current) {
+                        assertNull(current);
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testGetCachedCurrentUserReturnsNullInitially() throws Throwable {
+        Customer current = customerRepo.getCachedCurrentUser();
+        assertNull(current);
+    }
+
+    public void testGetCachedCurrentUserReturnsValueLoadedByFindCurrentUser()
+            throws Throwable {
+        givenLoggedInCustomer();
+        Customer current = findCurrentUser();
+
+        Customer cached = customerRepo.getCachedCurrentUser();
+        assertEquals(current, cached);
+    }
+
+    public void testCachedCurrentUserIsClearedOnLogout() throws Throwable {
+        givenLoggedInCustomer();
+        findCurrentUser();
+        logout();
+
+        Customer cached = customerRepo.getCachedCurrentUser();
+        assertNull(cached);
+    }
+
     static int counter = 0;
     private Customer givenCustomer() throws Throwable {
         String email = uid + "-" + (++counter) + "@example.com";
@@ -187,5 +243,24 @@ public class UserTest extends AsyncTestCase {
                 customerRepo.logout(new VoidTestCallback());
             }
         });
+    }
+
+    private Customer findCurrentUser() throws Throwable {
+        final Customer[] currentRef = new Customer[1];
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                customerRepo.findCurrentUser(new ObjectTestCallback<Customer>() {
+                    @Override
+                    public void onSuccess(Customer current) {
+                        currentRef[0] = current;
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+
+        return currentRef[0];
     }
 }
