@@ -1,11 +1,17 @@
 package com.strongloop.android.loopback;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
 import com.strongloop.android.loopback.callbacks.VoidCallback;
 import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -40,8 +46,13 @@ import java.util.Map;
  * }</pre>
  */
 public class UserRepository<U extends User> extends ModelRepository<U> {
+    public static final String SHARED_PREFERENCES_NAME =
+            RestAdapter.class.getCanonicalName();
+    public static final String PROPERTY_CURRENT_USER_ID = "currentUserId";
 
     private AccessTokenRepository accessTokenRepository;
+    private Object currentUserId;
+    private boolean isCurrentUserIdLoaded;
 
     private AccessTokenRepository getAccessTokenRepository() {
         if (accessTokenRepository == null) {
@@ -58,7 +69,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
      * @param userClass The User (sub)class. It must have a public no-argument constructor.
      */
     public UserRepository(String className, Class<U> userClass) {
-        super(className, null, userClass);
+        this(className, null, userClass);
     }
 
     /**
@@ -72,6 +83,16 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
      */
     public UserRepository(String className, String nameForRestUrl, Class<U> userClass) {
         super(className, nameForRestUrl, userClass);
+    }
+
+    public Object getCurrentUserId() {
+        loadCurrentUserIdIfNotLoaded();
+        return currentUserId;
+    }
+
+    protected void setCurrentUserId(Object currentUserId) {
+        this.currentUserId = currentUserId;
+        saveCurrentUserId();
     }
 
     /**
@@ -169,6 +190,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
                                 ? createObject(JsonUtil.fromJson(userJson))
                                 : null;
 
+                        setCurrentUserId(token.getUserId());
                         callback.onSuccess(token, user);
                     }
                 });
@@ -195,9 +217,39 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
             public void onSuccess(String response) {
                 RestAdapter radapter = getRestAdapter();
                 radapter.clearAccessToken();
+                setCurrentUserId(null);
                 callback.onSuccess();
             }
         });
+    }
+
+    private void saveCurrentUserId() {
+        final SharedPreferences.Editor editor = getSharedPreferences().edit();
+        final String json = new JSONArray().put(getCurrentUserId()).toString();
+        editor.putString(PROPERTY_CURRENT_USER_ID, json);
+        editor.commit();
+    }
+
+    private void loadCurrentUserIdIfNotLoaded() {
+        if (isCurrentUserIdLoaded) return;
+        isCurrentUserIdLoaded = true;
+
+        String json = getSharedPreferences().getString(PROPERTY_CURRENT_USER_ID, null);
+        if (json == null) return;
+
+        try {
+            Object id = new JSONArray(json).get(0);
+            setCurrentUserId(id);
+        } catch (JSONException e) {
+            String msg = "Cannot parse current user id '" + json + "'";
+            Log.e("LoopBack", msg, e);
+        }
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return getApplicationContext().getSharedPreferences(
+                SHARED_PREFERENCES_NAME,
+                Context.MODE_PRIVATE);
     }
 
 }
