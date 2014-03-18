@@ -3,6 +3,7 @@
 package com.strongloop.android.loopback;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 /**
  * An extension to the vanilla
@@ -13,12 +14,21 @@ import android.content.Context;
 public class RestAdapter
         extends com.strongloop.android.remoting.adapters.RestAdapter {
 
-    
+    public static final String SHARED_PREFERENCES_NAME =
+            RestAdapter.class.getCanonicalName();
+    public static final String PROPERTY_ACCESS_TOKEN = "accessToken";
+
+    private final Context context;
+
     public RestAdapter(Context context, String url) {
         super(context, url);
+        if (context == null) throw new NullPointerException("context must be not null");
+        this.context = context;
+        setAccessToken(loadAccessToken());
     }
 
     public void setAccessToken(String accessToken) {
+        saveAccessToken(accessToken);
         getClient().addHeader("Authorization", accessToken);
     }
 
@@ -61,7 +71,6 @@ public class RestAdapter
         return repository;
     }
 
-    
     /**
      * Creates a new {@link ModelRepository} from the given subclass.
      * @param repositoryClass A subclass of {@link ModelRepository} to use.
@@ -84,8 +93,25 @@ public class RestAdapter
         return repository;
     }
 
+
     private void attachModelRepository(RestRepository repository) {
         getContract().addItemsFromContract(repository.createContract());
         repository.setAdapter(this);
     }
- }
+
+    private void saveAccessToken(String accessToken) {
+        final SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PROPERTY_ACCESS_TOKEN, accessToken);
+        editor.commit();
+    }
+
+    private String loadAccessToken() {
+        return getSharedPreferences().getString(PROPERTY_ACCESS_TOKEN, null);
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return context.getSharedPreferences(
+                SHARED_PREFERENCES_NAME,
+                Context.MODE_PRIVATE);
+    }
+}
