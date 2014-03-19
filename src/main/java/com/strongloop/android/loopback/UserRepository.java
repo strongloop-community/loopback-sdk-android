@@ -1,11 +1,18 @@
 package com.strongloop.android.loopback;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
 import com.strongloop.android.loopback.callbacks.VoidCallback;
 import com.strongloop.android.remoting.JsonUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -40,12 +47,14 @@ import java.util.Map;
  * }</pre>
  */
 public class UserRepository<U extends User> extends ModelRepository<U> {
+    public static final String SHARED_PREFERENCES_NAME =
+            RestAdapter.class.getCanonicalName();
+    public static final String PROPERTY_CURRENT_USER_ID = "currentUserId";
 
     private AccessTokenRepository accessTokenRepository;
-
-    private RestAdapter getRestAdapter() {
-        return (RestAdapter) getAdapter();
-    }
+    private Object currentUserId;
+    private boolean isCurrentUserIdLoaded;
+    private U cachedCurrentUser;
 
     private AccessTokenRepository getAccessTokenRepository() {
         if (accessTokenRepository == null) {
@@ -62,7 +71,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
      * @param userClass The User (sub)class. It must have a public no-argument constructor.
      */
     public UserRepository(String className, Class<U> userClass) {
-        super(className, null, userClass);
+        this(className, null, userClass);
     }
 
     /**
@@ -76,6 +85,71 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
      */
     public UserRepository(String className, String nameForRestUrl, Class<U> userClass) {
         super(className, nameForRestUrl, userClass);
+    }
+
+    /**
+     * @return Id of the currently logged in user. null when there is no user logged in.
+     */
+    public Object getCurrentUserId() {
+        loadCurrentUserIdIfNotLoaded();
+        return currentUserId;
+    }
+
+    protected void setCurrentUserId(Object currentUserId) {
+        this.currentUserId = currentUserId;
+        cachedCurrentUser = null;
+        saveCurrentUserId();
+    }
+
+    /**
+     * Fetch the data of the currently logged in user. Invokes
+     * {@code callback.onSuccess(null)} when no user is logged in.
+     * The data is cached, see {@link #getCachedCurrentUser()}
+     * @param callback success/error callback
+     */
+    public void findCurrentUser(final ObjectCallback<U> callback) {
+        if (getCurrentUserId() == null) {
+            callback.onSuccess(null);
+            return;
+        }
+
+        this.findById(getCurrentUserId(), new ObjectCallback<U>() {
+            @Override
+            public void onSuccess(U user) {
+                cachedCurrentUser = user;
+                callback.onSuccess(user);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    /**
+     * Get the cached value of the currently logged in user.
+     * The value is updated by {@link #findCurrentUser(ObjectCallback)},
+     * {@link #loginUser(String, String, LoginCallback)} and
+     * {@link #logout(VoidCallback)}
+     *
+     * <p>
+     * The typical usage:
+     * <ul>
+     * <li>
+     * At the application start up and after a successfull login,
+     * {@link #findCurrentUser(ObjectCallback)} is called to pre-load the data.
+     * </li>
+     * <li>
+     * All other places call {@link #getCachedCurrentUser()} to access the data
+     * of the currently logged in user.
+     * </li>
+     * </ul>
+     *
+     * @return The current user or null.
+     */
+    public U getCachedCurrentUser() {
+        return cachedCurrentUser;
     }
 
     /**
@@ -173,6 +247,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
                                 ? createObject(JsonUtil.fromJson(userJson))
                                 : null;
 
+                        setCurrentUserId(token.getUserId());
                         callback.onSuccess(token, user);
                     }
                 });
@@ -197,11 +272,41 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
 
             @Override
             public void onSuccess(String response) {
-                RestAdapter radapter = (RestAdapter)getAdapter();
+                RestAdapter radapter = getRestAdapter();
                 radapter.clearAccessToken();
+                setCurrentUserId(null);
                 callback.onSuccess();
             }
         });
+    }
+
+    private void saveCurrentUserId() {
+        final SharedPreferences.Editor editor = getSharedPreferences().edit();
+        final String json = new JSONArray().put(getCurrentUserId()).toString();
+        editor.putString(PROPERTY_CURRENT_USER_ID, json);
+        editor.commit();
+    }
+
+    private void loadCurrentUserIdIfNotLoaded() {
+        if (isCurrentUserIdLoaded) return;
+        isCurrentUserIdLoaded = true;
+
+        String json = getSharedPreferences().getString(PROPERTY_CURRENT_USER_ID, null);
+        if (json == null) return;
+
+        try {
+            Object id = new JSONArray(json).get(0);
+            setCurrentUserId(id);
+        } catch (JSONException e) {
+            String msg = "Cannot parse current user id '" + json + "'";
+            Log.e("LoopBack", msg, e);
+        }
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return getApplicationContext().getSharedPreferences(
+                SHARED_PREFERENCES_NAME,
+                Context.MODE_PRIVATE);
     }
 
 }

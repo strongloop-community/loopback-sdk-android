@@ -1,10 +1,11 @@
 package com.strongloop.android.loopback.test;
 
+import android.content.Context;
 import android.util.Log;
 
+import com.strongloop.android.loopback.AccessToken;
 import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.User;
-import com.strongloop.android.loopback.AccessToken;
 import com.strongloop.android.loopback.UserRepository;
 
 public class UserTest extends AsyncTestCase {
@@ -37,6 +38,8 @@ public class UserTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        testContext.clearSharedPreferences(
+                CustomerRepository.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         adapter = createRestAdapter();
         customerRepo = adapter.createRepository(CustomerRepository.class);
     }
@@ -114,5 +117,150 @@ public class UserTest extends AsyncTestCase {
             }
         });
 
+    }
+
+    public void testSetsCurrentUserIdOnLogin() throws Throwable {
+        Customer user = givenLoggedInCustomer();
+        assertEquals(user.getId(), customerRepo.getCurrentUserId());
+    }
+
+    public void testClearsCurrentUserIdOnLogout() throws Throwable {
+        givenLoggedInCustomer();
+        logout();
+        assertNull(customerRepo.getCurrentUserId());
+    }
+
+    public void testCurrentUserIdIsStoredInSharedPreferences() throws Throwable {
+        Customer customer = givenLoggedInCustomer();
+        CustomerRepository anotherRepo = adapter.createRepository(
+                CustomerRepository.class);
+
+        assertEquals(customer.getId(), anotherRepo.getCurrentUserId());
+    }
+
+    public void testFindCurrentUserReturnsCorrectValue() throws Throwable {
+        final Customer customer = givenLoggedInCustomer();
+
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                customerRepo.findCurrentUser(new ObjectTestCallback<Customer>() {
+                    @Override
+                    public void onSuccess(Customer current) {
+                        assertEquals("id", customer.getId(), current.getId());
+                        assertEquals("email", customer.getEmail(), current.getEmail());
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testFindCurrentUserReturnsNullWhenNotLoggedIn() throws Throwable {
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                customerRepo.findCurrentUser(new ObjectTestCallback<Customer>() {
+                    @Override
+                    public void onSuccess(Customer current) {
+                        assertNull(current);
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testGetCachedCurrentUserReturnsNullInitially() throws Throwable {
+        Customer current = customerRepo.getCachedCurrentUser();
+        assertNull(current);
+    }
+
+    public void testGetCachedCurrentUserReturnsValueLoadedByFindCurrentUser()
+            throws Throwable {
+        givenLoggedInCustomer();
+        Customer current = findCurrentUser();
+
+        Customer cached = customerRepo.getCachedCurrentUser();
+        assertEquals(current, cached);
+    }
+
+    public void testCachedCurrentUserIsClearedOnLogout() throws Throwable {
+        givenLoggedInCustomer();
+        findCurrentUser();
+        logout();
+
+        Customer cached = customerRepo.getCachedCurrentUser();
+        assertNull(cached);
+    }
+
+    static int counter = 0;
+    private Customer givenCustomer() throws Throwable {
+        String email = uid + "-" + (++counter) + "@example.com";
+        final Customer customer = customerRepo.createUser(email, userPassword);
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                customer.save(new VoidTestCallback());
+            }
+        });
+        return customer;
+    }
+
+    private Customer givenLoggedInCustomer() throws Throwable {
+        final Customer customer = givenCustomer();
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                customerRepo.loginUser(customer.getEmail(), userPassword,
+                        new CustomerRepository.LoginCallback() {
+
+                            @Override
+                            public void onSuccess(AccessToken token, Customer currentUser) {
+                                notifyFinished();
+                           }
+
+                            @Override
+                            public void onError(Throwable t) {
+                                Log.e("UserTest", "givenLoggedInCustomer failed", t);
+                                notifyFailed(t);
+                            }
+
+                        }
+                );
+            }
+        });
+
+        return customer;
+    }
+
+    private void logout() throws Throwable {
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                customerRepo.logout(new VoidTestCallback());
+            }
+        });
+    }
+
+    private Customer findCurrentUser() throws Throwable {
+        final Customer[] currentRef = new Customer[1];
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                customerRepo.findCurrentUser(new ObjectTestCallback<Customer>() {
+                    @Override
+                    public void onSuccess(Customer current) {
+                        currentRef[0] = current;
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+
+        return currentRef[0];
     }
 }
