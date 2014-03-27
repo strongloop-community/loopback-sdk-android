@@ -248,6 +248,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
                                 : null;
 
                         setCurrentUserId(token.getUserId());
+                        cachedCurrentUser = user;
                         callback.onSuccess(token, user);
                     }
                 });
