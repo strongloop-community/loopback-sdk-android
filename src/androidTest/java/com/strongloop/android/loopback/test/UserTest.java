@@ -185,6 +185,15 @@ public class UserTest extends AsyncTestCase {
         assertEquals(current, cached);
     }
 
+    public void testGetCachedCurrentUserReturnsValueLoadedByLogin() throws Throwable {
+        Customer current = givenLoggedInCustomer();
+
+        Customer cached = customerRepo.getCachedCurrentUser();
+
+        assertNotNull(cached);
+        assertEquals(current.getId(), cached.getId());
+    }
+
     public void testCachedCurrentUserIsClearedOnLogout() throws Throwable {
         givenLoggedInCustomer();
         findCurrentUser();
