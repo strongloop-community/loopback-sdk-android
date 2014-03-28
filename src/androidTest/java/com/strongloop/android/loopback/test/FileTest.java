@@ -129,7 +129,7 @@ public class FileTest extends AsyncTestCase {
             public void run() {
                 file.download(new File.DownloadCallback() {
                     @Override
-                    public void onSuccess(byte[] content) {
+                    public void onSuccess(byte[] content, String contentType) {
                         MoreAsserts.assertEquals(binaryData, content);
                         notifyFinished();
                     }
@@ -274,7 +274,7 @@ public class FileTest extends AsyncTestCase {
                 container.createFileObject(fileName)
                         .download(new File.DownloadCallback() {
                             @Override
-                            public void onSuccess(byte[] content) {
+                            public void onSuccess(byte[] content, String contentType) {
                                 ref.set(0, content);
                                 notifyFinished();
                             }

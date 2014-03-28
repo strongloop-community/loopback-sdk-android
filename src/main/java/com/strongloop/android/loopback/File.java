@@ -46,7 +46,7 @@ public class File extends VirtualObject {
     public String getContainer() { return getContainerRef().getName(); }
 
     public static interface DownloadCallback {
-        public void onSuccess(byte[] content);
+        public void onSuccess(byte[] content, String contentType);
         public void onError(Throwable error);
     }
 
@@ -57,8 +57,8 @@ public class File extends VirtualObject {
     public void download(final DownloadCallback callback) {
         invokeMethod("download", getCommonParams(), new Adapter.BinaryCallback() {
             @Override
-            public void onSuccess(byte[] response) {
-                callback.onSuccess(response);
+            public void onSuccess(byte[] content, String contentType) {
+                callback.onSuccess(content, contentType);
             }
 
             @Override
@@ -76,7 +76,7 @@ public class File extends VirtualObject {
     public void download(final java.io.File localFile, final VoidCallback callback) {
         download(new DownloadCallback() {
             @Override
-            public void onSuccess(byte[] content) {
+            public void onSuccess(byte[] content, String contentType) {
                 try {
                     Files.write(content, localFile);
                     callback.onSuccess();
