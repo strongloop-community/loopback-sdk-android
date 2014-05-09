@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
+import com.strongloop.android.loopback.callbacks.VoidCallback;
 import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
@@ -18,9 +19,10 @@ import com.strongloop.android.remoting.adapters.Adapter;
  */
 public class Model extends VirtualObject {
 
-    public interface Callback {
-        public void onSuccess();
-        public void onError(Throwable t);
+    /**
+     * @deprecated Use {link VoidCallback} instead.
+     */
+    public static interface Callback extends VoidCallback {
     }
 
     private Object id;
@@ -84,7 +86,7 @@ public class Model extends VirtualObject {
         Map<String, Object> map = new HashMap<String, Object>();
         map.putAll(overflow);
         map.put("id", getId());
-        map.putAll(BeanUtil.getProperties(this, false, false));
+        map.putAll(super.toMap());
         return map;
     }
 
@@ -95,7 +97,7 @@ public class Model extends VirtualObject {
      * saved.
      * @param callback The callback to be executed when finished.
      */
-    public void save(final Callback callback) {
+    public void save(final VoidCallback callback) {
         invokeMethod(id == null ? "create" : "save", toMap(),
                 new Adapter.JsonObjectCallback() {
 
@@ -119,7 +121,7 @@ public class Model extends VirtualObject {
      * Destroys the Model from the server.
      * @param callback The callback to be executed when finished.
      */
-    public void destroy(final Callback callback) {
+    public void destroy(final VoidCallback callback) {
         invokeMethod("remove", toMap(), new Adapter.Callback() {
 
             @Override

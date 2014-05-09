@@ -5,7 +5,7 @@ buildscript {
       mavenCentral()
   }
   dependencies {
-      classpath 'com.android.tools.build:gradle:0.6.+'
+      classpath 'com.android.tools.build:gradle:0.9.+'
       classpath 'org.apache.commons:commons-io:1.3.2'
       classpath 'com.github.dcendents:android-maven-plugin:1.0'
   }
@@ -32,7 +32,7 @@ repositories {
 
 android {
     compileSdkVersion 18
-    buildToolsVersion "18.1.0"
+    buildToolsVersion "19.0.3"
 
     defaultConfig {
         minSdkVersion 14
@@ -51,13 +51,12 @@ configurations {
 
 dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
+    compile 'com.google.guava:guava:15.0'
 
     def strongRemoting = 'com.strongloop:strong-remoting-android:' + strongRemotingVersion
     compile(strongRemoting + '@jar') { transitive = true }
     subJavadocs(strongRemoting + ':javadoc') { transitive = false }
     subSources(strongRemoting + ':sources') { transitive = false }
-
-    instrumentTestCompile 'com.google.guava:guava:15.0'
 }
 
 task unpackJavadocIncludes(type: Sync) {
@@ -271,14 +270,13 @@ afterEvaluate { project ->
     // debugging
     task printCompilerInput << {
       println "javac input files"
-      compileRelease.source.each {
+      compileReleaseJava.source.each {
         println '  ' + it.absolutePath
       }
       println "javac classpath"
-      compileRelease.classpath.each {
+      compileReleaseJava.classpath.each {
         println '  ' + it.absolutePath
       }
     }
-
-    compileRelease.dependsOn printCompilerInput
+    compileReleaseJava.dependsOn printCompilerInput
 }

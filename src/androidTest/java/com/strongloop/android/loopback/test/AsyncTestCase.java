@@ -1,18 +1,21 @@
 package com.strongloop.android.loopback.test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import android.test.ActivityTestCase;
+
+import com.strongloop.android.loopback.Container;
+import com.strongloop.android.loopback.ContainerRepository;
+import com.strongloop.android.loopback.File;
+import com.strongloop.android.loopback.Model;
+import com.strongloop.android.loopback.ModelRepository;
+import com.strongloop.android.loopback.RestAdapter;
+import com.strongloop.android.loopback.test.helpers.TestContext;
+import com.strongloop.android.remoting.adapters.Adapter;
+import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
 
 import org.json.JSONObject;
 
-import android.test.ActivityTestCase;
-
-import com.strongloop.android.loopback.Model;
-import com.strongloop.android.loopback.ModelRepository;
-import com.strongloop.android.remoting.adapters.Adapter;
-import com.strongloop.android.remoting.adapters.Adapter.JsonObjectCallback;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Convenience class to easily perform asynchronous JUnit tests in Android.
@@ -23,28 +26,19 @@ public class AsyncTestCase extends ActivityTestCase {
     // host computer.
     public static final String REST_SERVER_URL = "http://10.0.2.2:3000";
 
-    public abstract class AsyncTest implements Runnable {
+    public TestContext testContext;
 
-        private CountDownLatch signal;
-        private Throwable failException;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        testContext = new TestContext(getInstrumentation());
+    }
 
-        public Throwable getFailException() {
-            return failException;
-        }
+    protected RestAdapter createRestAdapter() {
+        return new RestAdapter(testContext, REST_SERVER_URL);
+    }
 
-        public void notifyFailed(Throwable reason) {
-            failException = reason;
-            notifyFinished();
-        }
-
-        public void notifyFinished() {
-            signal.countDown();
-        }
-
-        private void setSignal(final CountDownLatch signal) {
-            this.signal = signal;
-        }
-
+    public abstract class AsyncTest extends AsyncTask {
 
         public JsonObjectCallback expectJsonResponse(String expectedData) {
             return new ExpectedDataCallback(expectedData);
@@ -75,57 +69,16 @@ public class AsyncTestCase extends ActivityTestCase {
                 notifyFinished();
             }
         };
-
-        /**
-         * Model.Callback that reports error as test failures.
-         */
-        public abstract class ModelCallback implements Model.Callback {
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
-
-        /**
-         * ModelRepository.FindCallback<T> that reports errors as test failures.
-         * @param <T> The Model type.
-         */
-        public abstract class FindModelCallback<T extends Model>
-                implements ModelRepository.FindCallback<T> {
-
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
-
-        /**
-         * ModelRepository.FindAllCallback<T> that reports errors
-         * as test failures.
-         * @param <T> The Model type.
-         */
-        public abstract class FindAllModelsCallback<T extends Model>
-                implements ModelRepository.FindAllCallback<T> {
-
-            @Override
-            public void onError(Throwable t) {
-                notifyFailed(t);
-            }
-        }
     }
 
     public void doAsyncTest(final AsyncTest asyncTest) throws Throwable {
-        TestRunner runner = new TestRunner(asyncTest);
-        runTestOnUiThread(runner);
+        await(asyncTest);
+    }
 
-        boolean success = runner.await();
-        if (runner.getUncaughtException() != null) {
-            throw runner.getUncaughtException();
-        }
-        if (asyncTest.getFailException() != null) {
-            throw asyncTest.getFailException();
-        }
-        assertTrue(success);
+    public void await(final AsyncTask asyncTask) throws Throwable {
+        AsyncTask.Runner runner = new AsyncTask.Runner(asyncTask);
+        runTestOnUiThread(runner);
+        runner.await();
     }
 
     public JSONObject fetchJsonObjectById(final ModelRepository<?> repository, final Object id)
@@ -163,7 +116,7 @@ public class AsyncTestCase extends ActivityTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                repository.findById(id, new FindModelCallback<T>() {
+                repository.findById(id, new ObjectTestCallback<T>() {
                     @Override
                     public void onSuccess(T model) {
                         remoteObject[0] = model;
@@ -175,38 +128,51 @@ public class AsyncTestCase extends ActivityTestCase {
         return (T) remoteObject[0];
     }
 
-    private static class TestRunner implements Runnable {
-
-        private final AsyncTest asyncTest;
-        private final CountDownLatch signal = new CountDownLatch(1);
-        private Throwable uncaughtException;
-
-        public TestRunner(AsyncTest asyncTest) {
-            this.asyncTest = asyncTest;
-            this.asyncTest.setSignal(signal);
-        }
-
-        @Override
-        public void run() {
-            try {
-                asyncTest.run();
+    public Container givenContainer(final ContainerRepository repository) throws Throwable {
+        final Container[] ref = new Container[1];
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                repository.create("a-container", new ObjectTestCallback<Container>() {
+                    @Override
+                    public void onSuccess(Container object) {
+                        ref[0] = object;
+                        notifyFinished();
+                    }
+                });
             }
-            catch (Throwable t) {
-                uncaughtException = t;
-            }
-        }
+        });
+        return ref[0];
+    }
 
-        public boolean await() {
-            try {
-                signal.await(30, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e) {
-            }
-            return signal.getCount() == 0;
-        }
+    public File givenFile(final ContainerRepository repository, byte[] content)
+            throws Throwable {
+       return givenFile(repository, "a-file", content);
+    }
 
-        public Throwable getUncaughtException() {
-            return uncaughtException;
-        }
+    public File givenFile(final ContainerRepository repository, final String name)
+            throws Throwable {
+        return givenFile(repository, name, new byte[0]);
+    }
+
+    public File givenFile(final ContainerRepository repository, final String name, final byte[] content)
+            throws Throwable {
+        final File[] ref = new File[1];
+        final Container container = givenContainer(repository);
+
+        await(new AsyncTask() {
+            @Override
+            public void run() {
+                container.upload(name, content, null,
+                        new ObjectTestCallback<File>() {
+                            @Override
+                            public void onSuccess(File object) {
+                                ref[0] = object;
+                                notifyFinished();
+                            }
+                        });
+            }
+        });
+        return ref[0];
     }
 }

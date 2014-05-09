@@ -9,9 +9,9 @@ for general conventions on bug reporting, coding style and pull request flow.
  * Install [Android Studio](http://developer.android.com/sdk/installing/studio.html)
  * Open Tools &gt; Android &gt; SDK Manager, make sure you have these modules
    installed:
-   * Tools &gt; Android SDK Platform-tools 18.1.0
-   * Tools &gt; Android SDK Build-tools 18.1.0
-   * Android 4.3 (API 18) &gt; SDK Platform
+   * Tools &gt; Android SDK Platform-tools 19.0.1
+   * Tools &gt; Android SDK Build-tools 19.0.3
+   * Android 4.3 (API 18) &gt; SDK Platform (you can use Android 4.4/API 19 too)
    * Extras &gt; Android Support Repository
    * Extras &gt; Android Support Library
  * Compile and run unit-test:

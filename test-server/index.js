@@ -1,31 +1,34 @@
+var path = require('path');
+var async = require('async');
 var loopback = require('loopback');
 
 var app = loopback();
-var Memory = loopback.createDataSource({
-  connector: loopback.Memory
+app.dataSource('Memory', {
+  connector: loopback.Memory,
+  defaultForType: 'db'
 });
 
 var lbpn = require('loopback-push-notification');
-var PushModel = lbpn(app, { dataSource: Memory });
+var PushModel = lbpn(app, { dataSource: app.datasources.Memory });
 var Installation = PushModel.Installation;
 
-var Widget = loopback.createModel('widget', {
-  name: {
-    type: String,
-    required: true
+var Widget = app.model('widget', {
+  properties: {
+    name: {
+      type: String,
+      required: true
+    },
+    bars: {
+      type: Number,
+      required: false
+    },
+    data: {
+      type: Object,
+      required: false
+    }
   },
-  bars: {
-    type: Number,
-    required: false
-  },
-  data: {
-    type: Object,
-    required: false
-  }
+  dataSource: 'Memory'
 });
-
-Widget.attachTo(Memory);
-app.model(Widget);
 
 Widget.destroyAll(function () {
   Widget.create({
@@ -41,5 +44,56 @@ Widget.destroyAll(function () {
   });
 });
 
+app.model(loopback.AccessToken);
+
+app.model('Customer', {
+  options: {
+    base: 'User',
+    relations: {
+      accessTokens: {
+        model: "AccessToken",
+        type: "hasMany",
+        foreignKey: "userId"
+      }
+    }
+  },
+  dataSource: 'Memory'
+});
+
+app.dataSource('mail', { connector: 'mail', defaultForType: 'mail' });
+loopback.autoAttach();
+
+// storage service
+var fs = require('fs');
+var storage = path.join(__dirname, 'storage');
+if (!fs.existsSync(storage))
+  fs.mkdirSync(storage);
+app.dataSource('storage', {
+  connector: require('loopback-storage-service'),
+  provider: 'filesystem',
+  root: storage
+});
+
+var Container = app.dataSources.storage.createModel('container');
+app.model(Container);
+
+Container.destroyAll = function(cb) {
+  Container.getContainers(function(err, containers) {
+    if (err) return cb(err);
+    async.each(
+      containers,
+      function(item, next) {
+        Container.destroyContainer(item.name, next);
+      },
+      cb
+    );
+  });
+};
+
+Container.destroyAll.shared = true;
+Container.destroyAll.http = { verb: 'del', path: '/' }
+
+app.enableAuth();
+app.use(loopback.token({ model: app.models.AccessToken }));
 app.use(loopback.rest());
 app.listen(3000);

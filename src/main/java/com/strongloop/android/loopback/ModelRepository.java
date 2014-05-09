@@ -2,40 +2,38 @@
 
 package com.strongloop.android.loopback;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import org.atteo.evo.inflector.English;
-
-import com.strongloop.android.remoting.JsonUtil;
-import com.strongloop.android.remoting.Repository;
+import com.strongloop.android.loopback.callbacks.JsonArrayParser;
+import com.strongloop.android.loopback.callbacks.JsonObjectParser;
+import com.strongloop.android.loopback.callbacks.ListCallback;
+import com.strongloop.android.loopback.callbacks.ObjectCallback;
 import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
+
+import org.atteo.evo.inflector.English;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A local representative of a single model type on the server, encapsulating
  * the name of the model type for easy {@link Model} creation, discovery, and
  * management.
  */
-public class ModelRepository<T extends Model> extends Repository {
+public class ModelRepository<T extends Model> extends RestRepository<T> {
 
-    public interface FindCallback<T extends Model> {
-        public void onSuccess(T model);
-        public void onError(Throwable t);
+    /**
+     * @deprecated Use {link ObjectCallback} instead.
+     */
+    public interface FindCallback<T extends Model> extends ObjectCallback<T> {
     }
 
-    public interface FindAllCallback<T extends Model> {
-        public void onSuccess(List<T> models);
-        public void onError(Throwable t);
+    /**
+     * @deprecated Use {link ListCallback} instead.
+     */
+    public interface FindAllCallback<T extends Model> extends ListCallback<T> {
     }
 
-    private Class<T> modelClass;
     private String nameForRestUrl;
 
     public ModelRepository(String className) {
@@ -56,23 +54,26 @@ public class ModelRepository<T extends Model> extends Repository {
      * Creates a new Repository, associating it with the named remote class.
      * @param className The remote class name.
      * @param nameForRestUrl The pluralized class name to use in REST transport.
+     *                       Use {@code null} for the default value, which is the plural
+     *                       form of className.
      * @param modelClass The Model class. It must have a public no-argument
      * constructor.
      */
     @SuppressWarnings("unchecked")
     public ModelRepository(String className, String nameForRestUrl, Class<T> modelClass) {
-        super(className);
+        super(className, modelClass != null ? modelClass : (Class<T>)Model.class);
 
         this.nameForRestUrl = nameForRestUrl != null
                 ? nameForRestUrl
                 : English.plural(className);
+    }
 
-        if (modelClass == null) {
-            this.modelClass = (Class<T>)Model.class;
-        }
-        else {
-            this.modelClass = modelClass;
-        }
+   /**
+    * Returns the name of the REST url
+    * @return nameForRestUrl
+    */
+    public String getNameForRestUrl() {
+        return nameForRestUrl;
     }
 
     /**
@@ -82,7 +83,7 @@ public class ModelRepository<T extends Model> extends Repository {
      * @return A {@link RestContract} for this model type.
      */
     public RestContract createContract() {
-        RestContract contract = new RestContract();
+        RestContract contract = super.createContract();
 
         String className = getClassName();
 
@@ -102,31 +103,27 @@ public class ModelRepository<T extends Model> extends Repository {
     }
 
     /**
+     * @deprecated Use {link ModelRepository#createObject} instead.
+     */
+    public T createModel(Map<String, ? extends Object> parameters) {
+        return createObject(parameters);
+    }
+
+    /**
      * Creates a new {@link Model} of this type with the parameters described.
      * @param  parameters The parameters.
      * @return A new {@link Model}.
      */
-    public T createModel(Map<String, ? extends Object> parameters) {
-        if (parameters == null) {
-            parameters = new HashMap<String, Object>();
-        }
-        T model = null;
-        try {
-            model = modelClass.newInstance();
-        }
-        catch (Exception e) {
-            IllegalArgumentException ex = new IllegalArgumentException();
-            ex.initCause(e);
-            throw ex;
-        }
-        model.setRepository(this);
-        model.setCreationParameters(parameters);
+    @Override
+    public T createObject(Map<String, ? extends Object> parameters) {
+        T model = super.createObject(parameters);
         model.putAll(parameters);
-        BeanUtil.setProperties(model, parameters, true);
+
         Object id = parameters.get("id");
         if (id != null) {
             model.setId(id);
         }
+
         return model;
     }
 
@@ -136,54 +133,19 @@ public class ModelRepository<T extends Model> extends Repository {
      * @param id The id to search for.
      * @param callback The callback to be executed when finished.
      */
-    public void findById(Object id, final FindCallback<T> callback) {
+    public void findById(Object id, final ObjectCallback<T> callback) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("id", id);
         invokeStaticMethod("findById", params,
-                new Adapter.JsonObjectCallback() {
-
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);
-            }
-
-            @Override
-            public void onSuccess(JSONObject response) {
-                if (response == null) {
-                    // Not found
-                    callback.onSuccess(null);
-                }
-                else {
-                    callback.onSuccess(
-                            createModel(JsonUtil.fromJson(response)));
-                }
-            }
-        });
+                new JsonObjectParser<T>(this, callback));
     }
 
     /**
      * Finds and downloads all models of this type on and from the server.
      * @param callback The callback to be executed when finished.
      */
-    public void findAll(final FindAllCallback<T> callback) {
-        invokeStaticMethod("all", null, new Adapter.JsonArrayCallback() {
-
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);
-            }
-
-            @Override
-            public void onSuccess(JSONArray response) {
-                List<T> list = new ArrayList<T>();
-                if (response != null) {
-                    for (int i = 0; i < response.length(); i++) {
-                        list.add(createModel(JsonUtil.fromJson(
-                                response.optJSONObject(i))));
-                    }
-                }
-                callback.onSuccess(list);
-            }
-        });
+    public void findAll(final ListCallback<T> callback) {
+        invokeStaticMethod("all", null,
+                new JsonArrayParser<T>(this, callback));
     }
 }
