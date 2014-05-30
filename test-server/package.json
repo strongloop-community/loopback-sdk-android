@@ -7,6 +7,7 @@
     "loopback": "1.x",
     "loopback-push-notification": "~1.0.0",
     "loopback-storage-service": "git+ssh://git@github.com:strongloop/loopback-storage-service",
-    "async": "~0.2.10"
+    "async": "~0.2.10",
+    "formidable": "~1.0.14"
   }
 }
