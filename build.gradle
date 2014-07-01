@@ -40,30 +40,13 @@ android {
     }
 }
 
-configurations {
-  // Configuration of sub-projects javadoc
-  // e.g strong-remoting-x.y.z-javadoc
-  subJavadocs 
-  // Configuration of sub-projects sources
-  // e.g strong-remoting-x.y.z-source
-  subSources
-}
-
 dependencies {
     compile 'org.atteo:evo-inflector:1.0.1'
     compile 'com.google.guava:guava:15.0'
-
-    def strongRemoting = 'com.strongloop:strong-remoting-android:' + strongRemotingVersion
-    compile(strongRemoting + '@jar') { transitive = true }
-    subJavadocs(strongRemoting + ':javadoc') { transitive = false }
-    subSources(strongRemoting + ':sources') { transitive = false }
 }
 
 task unpackJavadocIncludes(type: Sync) {
     // unpack all source dependencies
-    configurations.subSources.resolve().each { dep ->
-        from zipTree(dep.absolutePath)
-    }
     into 'build/javadoc-sources'
 }
 
@@ -160,18 +143,6 @@ afterEvaluate { project ->
             }
         }
 
-        configurations.subJavadocs.resolve().each { dep ->
-            into(root + '/libs/docs') {
-                from(dep.absolutePath)
-            }
-        }
-
-        configurations.subSources.resolve().each { dep ->
-            into(root + '/libs/src') {
-                from(dep.absolutePath)
-            }
-        }
-
         into(root + '/libs/docs') {
             from(androidJavadocsJar.archivePath)
         }
@@ -213,9 +184,9 @@ afterEvaluate { project ->
                 }
 
                 pom.project {
-                    name 'loopback-android'
+                    name 'loopback-sdk-android'
                     description 'Android client for LoopBack'
-                    url 'https://github.com/strongloop/loopback-android'
+                    url 'https://github.com/strongloop/loopback-sdk-android'
 
                     licenses {
                         license {
@@ -226,9 +197,9 @@ afterEvaluate { project ->
                     }
 
                     scm {
-                        connection 'scm:git@github.com:strongloop/loopback-android.git'
-                        developerConnection 'scm:git@github.com:strongloop/loopback-android.git'
-                        url 'https://github.com/strongloop/loopback-android'
+                        connection 'scm:git@github.com:strongloop/loopback-sdk-android.git'
+                        developerConnection 'scm:git@github.com:strongloop/loopback-sdk-android.git'
+                        url 'https://github.com/strongloop/loopback-sdk-android'
                     }
 
                     developers {
