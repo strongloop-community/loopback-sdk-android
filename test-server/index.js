@@ -8,8 +8,8 @@ app.dataSource('Memory', {
   defaultForType: 'db'
 });
 
-var lbpn = require('loopback-push-notification');
-var PushModel = lbpn(app, { dataSource: app.datasources.Memory });
+var lbpn = require('loopback-component-push');
+var PushModel = lbpn.createPushModel(app, { dataSource: app.datasources.Memory });
 var Installation = PushModel.Installation;
 
 var Widget = app.model('widget', {
@@ -69,7 +69,7 @@ var storage = path.join(__dirname, 'storage');
 if (!fs.existsSync(storage))
   fs.mkdirSync(storage);
 app.dataSource('storage', {
-  connector: require('loopback-storage-service'),
+  connector: require('loopback-component-storage'),
   provider: 'filesystem',
   root: storage
 });
