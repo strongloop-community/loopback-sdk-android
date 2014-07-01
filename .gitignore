@@ -36,3 +36,7 @@ proguard/
 
 node_modules
 /test-server/storage/
+.settings
+/target
+project.properties
+
