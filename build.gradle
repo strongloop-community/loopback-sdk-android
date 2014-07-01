@@ -31,7 +31,7 @@ repositories {
 }
 
 android {
-    compileSdkVersion 18
+    compileSdkVersion 20
     buildToolsVersion "19.0.3"
 
     defaultConfig {
@@ -41,8 +41,9 @@ android {
 }
 
 dependencies {
-    compile 'org.atteo:evo-inflector:1.0.1'
-    compile 'com.google.guava:guava:15.0'
+    compile 'org.atteo:evo-inflector:1.2'
+    compile 'com.google.guava:guava:17.0'
+    compile 'com.loopj.android:android-async-http:1.4.5'
 }
 
 task unpackJavadocIncludes(type: Sync) {
