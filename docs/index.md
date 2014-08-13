@@ -1,3 +1,3 @@
 Please see the LoopBack
-[Android SDK API Reference](http://apidocs.strongloop.com/loopback-sdk-android/api/index.html).
+[Android SDK API Reference](api/index.html).
 
