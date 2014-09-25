@@ -1,1 +1,4 @@
+// workaround for https://android-review.googlesource.com/#/c/108422/
+include ':'
+
 rootProject.name = 'loopback-sdk-android'
