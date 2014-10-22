@@ -2,6 +2,10 @@ var path = require('path');
 var async = require('async');
 var loopback = require('loopback');
 
+// start strong-remoting's test server
+require('./remoting');
+
+// setup loopback's test server
 var app = loopback();
 app.dataSource('Memory', {
   connector: loopback.Memory,
@@ -93,7 +97,10 @@ Container.destroyAll = function(cb) {
 Container.destroyAll.shared = true;
 Container.destroyAll.http = { verb: 'del', path: '/' }
 
+app.use(require('morgan')('loopback> :method :url :status'));
 app.enableAuth();
 app.use(loopback.token({ model: app.models.AccessToken }));
 app.use(loopback.rest());
-app.listen(3000);
+app.listen(3000, function() {
+  console.log('LoopBack test server listening on http://localhost:3000/');
+});

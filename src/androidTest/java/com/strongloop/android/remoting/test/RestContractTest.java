@@ -16,10 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RestContractTest extends AsyncTestCase {
-    // NOTE: "10.0.2.2" is the "localhost" of the Android emulator's
-    // host computer.
-    static final String SERVER_URL ="http://10.0.2.2:3001";
-
     /**
      * Convenience method to create a single-entry Map.
      */
@@ -35,7 +31,7 @@ public class RestContractTest extends AsyncTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        adapter = new RestAdapter(getActivity(), SERVER_URL);
+        adapter = createRestAdapter();
 
         final RestContract contract = adapter.getContract();
 
@@ -233,7 +229,7 @@ public class RestContractTest extends AsyncTestCase {
         doAsyncTest(new AsyncTest() {
             @Override
             public void run() {
-                RestAdapter customAdapter = new RestAdapter(getActivity(), SERVER_URL) {
+                RestAdapter customAdapter = new RestAdapter(getActivity(), REST_SERVER_URL) {
                     {
                         this.getClient().addHeader("Authorization", "auth-token");
                     }

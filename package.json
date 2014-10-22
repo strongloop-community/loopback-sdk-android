@@ -2,7 +2,14 @@
   "name": "loopback-sdk-android",
   "version": "1.4.0",
   "description": "Android client SDK for the LoopBack framework.",
-  "keywords": [ "StrongLoop", "LoopBack", "client", "SDK", "iOS", "mobile" ],
+  "keywords": [
+    "StrongLoop",
+    "LoopBack",
+    "client",
+    "SDK",
+    "iOS",
+    "mobile"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/strongloop/loopback-sdk-android.git"
@@ -10,5 +17,14 @@
   "license": {
     "name": "Dual MIT/StrongLoop",
     "url": "https://github.com/strongloop/loopback-sdk-android/blob/master/LICENSE"
+  },
+  "devDependencies": {
+    "async": "~0.9.0",
+    "express": "^4.9.8",
+    "loopback": "^2.5.0",
+    "loopback-component-push": "1.x",
+    "loopback-component-storage": "1.x",
+    "morgan": "^1.4.0",
+    "strong-remoting": "^2.5.0"
   }
 }
