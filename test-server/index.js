@@ -13,8 +13,8 @@ app.dataSource('Memory', {
 });
 
 var lbpn = require('loopback-component-push');
-var PushModel = lbpn.createPushModel(app, { dataSource: app.datasources.Memory });
-var Installation = PushModel.Installation;
+var PushModel = lbpn.createPushModel();
+app.model(lbpn.Installation, { dataSource: 'Memory' });
 
 var Widget = app.model('widget', {
   properties: {
