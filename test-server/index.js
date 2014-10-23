@@ -9,7 +9,6 @@ require('./remoting');
 var app = loopback();
 app.dataSource('Memory', {
   connector: loopback.Memory,
-  defaultForType: 'db'
 });
 
 var lbpn = require('loopback-component-push');
@@ -48,7 +47,10 @@ Widget.destroyAll(function () {
   });
 });
 
-app.model(loopback.AccessToken);
+app.model(loopback.AccessToken, { public: false, dataSource: 'Memory' });
+app.model(loopback.ACL, { public: false, dataSource: 'Memory' });
+app.model(loopback.Role, { public: false, dataSource: 'Memory' });
+app.model(loopback.RoleMapping, { public: false, dataSource: 'Memory' });
 
 app.model('Customer', {
   options: {
@@ -63,9 +65,6 @@ app.model('Customer', {
   },
   dataSource: 'Memory'
 });
-
-app.dataSource('mail', { connector: 'mail', defaultForType: 'mail' });
-loopback.autoAttach();
 
 // storage service
 var fs = require('fs');
@@ -99,7 +98,6 @@ Container.destroyAll.http = { verb: 'del', path: '/' }
 
 app.use(require('morgan')('loopback> :method :url :status'));
 app.enableAuth();
-app.use(loopback.token({ model: app.models.AccessToken }));
 app.use(loopback.rest());
 app.listen(3000, function() {
   console.log('LoopBack test server listening on http://localhost:3000/');
