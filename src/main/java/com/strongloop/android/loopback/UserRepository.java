@@ -190,7 +190,7 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
 
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/login?include=user", "POST"),
                 className + ".login");
-        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/logout", "GET"),
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/logout", "POST"),
                 className + ".logout");
         return contract;
     }
