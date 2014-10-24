@@ -1,5 +1,7 @@
 group = 'com.strongloop';
 
+logger.info('**JVM VERSION** ' + org.gradle.internal.jvm.Jvm.current())
+
 buildscript {
   repositories {
       mavenCentral()
@@ -73,6 +75,16 @@ android.libraryVariants.all { variant ->
         }
         ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
         classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
+
+        logger.info('**JAVADOC CLASSPATH for ' + name + '**')
+        classpath.each {
+          logger.info '  ' + it.absolutePath
+          if (!it.isFile() && !it.isDirectory()) {
+            logger.error('INVALID CLASSPATH ITEM ' + it.absolutePath);
+          }
+        }
+
+        verbose = logger.isEnabled(LogLevel.INFO)
     }
 }
 
@@ -241,13 +253,13 @@ afterEvaluate { project ->
 
     // debugging
     task printCompilerInput << {
-      println "javac input files"
+      logger.info "**JAVAC INPUT FILES**"
       compileReleaseJava.source.each {
-        println '  ' + it.absolutePath
+        logger.info '  ' + it.absolutePath
       }
-      println "javac classpath"
+      logger.info "**JAVAC CLASSPATH**"
       compileReleaseJava.classpath.each {
-        println '  ' + it.absolutePath
+        logger.info '  ' + it.absolutePath
       }
     }
     compileReleaseJava.dependsOn printCompilerInput
