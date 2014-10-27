@@ -2,15 +2,18 @@ var path = require('path');
 var async = require('async');
 var loopback = require('loopback');
 
+// start strong-remoting's test server
+require('./remoting');
+
+// setup loopback's test server
 var app = loopback();
 app.dataSource('Memory', {
   connector: loopback.Memory,
-  defaultForType: 'db'
 });
 
 var lbpn = require('loopback-component-push');
-var PushModel = lbpn.createPushModel(app, { dataSource: app.datasources.Memory });
-var Installation = PushModel.Installation;
+var PushModel = lbpn.createPushModel();
+app.model(lbpn.Installation, { dataSource: 'Memory' });
 
 var Widget = app.model('widget', {
   properties: {
@@ -44,7 +47,10 @@ Widget.destroyAll(function () {
   });
 });
 
-app.model(loopback.AccessToken);
+app.model(loopback.AccessToken, { public: false, dataSource: 'Memory' });
+app.model(loopback.ACL, { public: false, dataSource: 'Memory' });
+app.model(loopback.Role, { public: false, dataSource: 'Memory' });
+app.model(loopback.RoleMapping, { public: false, dataSource: 'Memory' });
 
 app.model('Customer', {
   options: {
@@ -59,9 +65,6 @@ app.model('Customer', {
   },
   dataSource: 'Memory'
 });
-
-app.dataSource('mail', { connector: 'mail', defaultForType: 'mail' });
-loopback.autoAttach();
 
 // storage service
 var fs = require('fs');
@@ -93,7 +96,9 @@ Container.destroyAll = function(cb) {
 Container.destroyAll.shared = true;
 Container.destroyAll.http = { verb: 'del', path: '/' }
 
+app.use(require('morgan')('loopback> :method :url :status'));
 app.enableAuth();
-app.use(loopback.token({ model: app.models.AccessToken }));
 app.use(loopback.rest());
-app.listen(3000);
+app.listen(3000, function() {
+  console.log('LoopBack test server listening on http://localhost:3000/');
+});

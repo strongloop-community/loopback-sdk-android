@@ -73,13 +73,15 @@ public class UserTest extends AsyncTestCase {
 
     // login / logout
     public void testLoginLogout() throws Throwable {
+        final Customer user = givenCustomer();
+
         // Login the user using the repository
         doAsyncTest(new AsyncTest() {
 
             @Override
             public void run() {
 
-                customerRepo.loginUser(userEmail, userPassword,
+                customerRepo.loginUser(user.getEmail(), userPassword,
                         new CustomerRepository.LoginCallback() {
 
                             @Override
@@ -90,7 +92,7 @@ public class UserTest extends AsyncTestCase {
                             @Override
                             public void onSuccess(AccessToken token, Customer currentUser) {
                                 assertNotNull("currentUser should be not null", currentUser);
-                                assertEquals("currentUser.email", currentUser.getEmail(), userEmail);
+                                assertEquals("currentUser.email", currentUser.getEmail(), user.getEmail());
                                 assertNotNull("accessToken should be not null", token);
                                 assertEquals("userId", token.getUserId(), currentUser.getId());
                                 Log.i("UserTest", "login id: " + currentUser.getId());
