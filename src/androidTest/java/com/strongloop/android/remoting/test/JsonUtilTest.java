@@ -10,9 +10,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Multisets;
 import com.strongloop.android.remoting.JsonUtil;
+import com.strongloop.android.remoting.RestUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 
 public class JsonUtilTest extends TestCase {
@@ -85,6 +91,21 @@ public class JsonUtilTest extends TestCase {
         List<?> toList = JsonUtil.fromJson(
                 (JSONArray)JsonUtil.toJson(fromList));
         assertEquals(fromList, toList);
+    }
+
+    public void testRestUtils() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "filter", ImmutableMap.of("include", ImmutableList.of("homeTeam", "visitingTeam")));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "filter[include]",
+                "homeTeam",
+                "filter[include]",
+                "visitingTeam");
+
+        assertEquals(result, flattened);
     }
 
     // JSONObject doesn't implement an equals() method, so this is required.
