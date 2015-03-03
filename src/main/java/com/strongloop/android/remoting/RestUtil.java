@@ -48,8 +48,21 @@ public class RestUtil {
             } else if (value instanceof Map) {
                 result.putAll(flattenParameters(key, Multimaps.forMap((Map) value)));
             } else if(value instanceof List) {
-                for(Object obj : (List) value)
-                    result.put(key, obj);
+                List tmp  = (List) value;
+                for(int i=0; i<tmp.size(); i++) {
+                    Object obj = tmp.get(i);
+                    String newKey = key + "[" + i + "]";
+
+                    if(obj instanceof Map) {
+                        result.putAll(flattenParameters(newKey, Multimaps.forMap((Map) obj)));
+                    }
+                    else if(obj instanceof Multimap) {
+                        result.putAll(flattenParameters(newKey, (Multimap) obj));
+                    }
+                    else {
+                        result.put(newKey, obj);
+                    }
+                }
             }
             else {
                 result.put(key, value);

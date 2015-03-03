@@ -108,6 +108,54 @@ public class JsonUtilTest extends TestCase {
         assertEquals(result, flattened);
     }
 
+    public void testRestUtils2() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "where", ImmutableMap.of("and", ImmutableList.of("homeTeam", "visitingTeam")));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "where[and][0]",
+                "homeTeam",
+                "where[and][1]",
+                "visitingTeam");
+
+        assertEquals(result, flattened);
+    }
+
+    public void testRestUtils3() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "where", ImmutableMap.of("and", ImmutableList.of("homeTeam", "visitingTeam", ImmutableMap.of("other", "3"))));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "where[and][0]",
+                "homeTeam",
+                "where[and][1]",
+                "visitingTeam",
+                "where[and][2][other]",
+                "3");
+
+        assertEquals(result, flattened);
+    }
+
+    public void testRestUtils4() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "filter", ImmutableMap.of(
+                        "where",
+                        ImmutableMap.of("and", ImmutableList.of(
+                                ImmutableMap.of("division", "332323")))));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "filter[where][and][0][division]",
+                "332323");
+
+        assertEquals(result, flattened);
+    }
+
     // JSONObject doesn't implement an equals() method, so this is required.
     private void assertJsonEquals(String message, Object obj1, Object obj2) {
         if (obj1 instanceof JSONObject && obj2 instanceof JSONObject) {
