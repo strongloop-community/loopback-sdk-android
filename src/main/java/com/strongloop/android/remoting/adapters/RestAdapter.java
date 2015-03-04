@@ -19,6 +19,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -394,11 +395,31 @@ public class RestAdapter extends Adapter {
                 if ("GET".equalsIgnoreCase(method) ||
                         "HEAD".equalsIgnoreCase(method) ||
                         "DELETE".equalsIgnoreCase(method)) {
+                    boolean processed = false;
+                    // Preferably use "stringified" JSON in REST queries
+                    try {
+                        Object obj = JsonUtil.toJson(parameters);
+                        if(obj instanceof JSONObject) {
+                            JSONObject json = (JSONObject) obj;
+                            if(json.optJSONObject("filter") != null) {
+                                JSONObject filter = json.optJSONObject("filter");
+                                String s = String.valueOf(filter);
+                                uri.appendQueryParameter("filter", s);
+                                processed = true;
+                            }
+                        }
+                    }
+                    catch (JSONException e) {
+                        Log.e(TAG, "Couldn't convert parameters to JSON", e);
+                    }
 
-                    for (Map.Entry<String, ? extends Object> entry :
-                            new RestUtil().flattenParameters(parameters).entries()) {
-                        uri.appendQueryParameter(entry.getKey(),
-                        		String.valueOf(entry.getValue()));
+                    if(!processed) {
+                        // Fallback to HTTP query string syntax
+                        for (Map.Entry<String, ? extends Object> entry :
+                                new RestUtil().flattenParameters(parameters).entries()) {
+                            uri.appendQueryParameter(entry.getKey(),
+                                    String.valueOf(entry.getValue()));
+                        }
                     }
                 }
                 else if (parameterEncoding == ParameterEncoding.FORM_URL) {
