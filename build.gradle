@@ -34,17 +34,17 @@ repositories {
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.0.2"
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         minSdkVersion 8
-        targetSdkVersion 20
+        targetSdkVersion 21
     }
 }
 
 dependencies {
     compile 'org.atteo:evo-inflector:1.2'
-    compile 'com.google.guava:guava:17.0'
+    compile 'com.google.guava:guava:18.0'
     compile 'com.loopj.android:android-async-http:1.4.5'
 }
 
