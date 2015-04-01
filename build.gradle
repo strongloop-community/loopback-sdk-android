@@ -45,7 +45,7 @@ android {
 dependencies {
     compile 'org.atteo:evo-inflector:1.2'
     compile 'com.google.guava:guava:18.0'
-    compile 'com.loopj.android:android-async-http:1.4.5'
+    compile 'com.loopj.android:android-async-http:1.4.6'
 }
 
 task unpackJavadocIncludes(type: Sync) {
