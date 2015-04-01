@@ -2,24 +2,6 @@
 
 package com.strongloop.android.remoting.adapters;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONException;
-
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -31,6 +13,24 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.strongloop.android.remoting.JsonUtil;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 /**
  * A specific {@link Adapter} implementation for RESTful servers.
@@ -45,7 +45,7 @@ import com.strongloop.android.remoting.JsonUtil;
 public class RestAdapter extends Adapter {
     private static final String TAG = "remoting.RestAdapter";
 
-    private HttpClient client;
+    private RestHttpClient client;
     private RestContract contract;
 
     public RestAdapter(Context context, String url) {
@@ -84,7 +84,7 @@ public class RestAdapter extends Adapter {
             client = null;
         }
         else {
-            client = new HttpClient(context, url);
+            client = new RestHttpClient(context, url);
             client.addHeader("Accept", "application/json");
         }
     }
@@ -309,7 +309,7 @@ public class RestAdapter extends Adapter {
         FORM_MULTIPART
     }
 
-    private static class HttpClient extends AsyncHttpClient {
+    private static class RestHttpClient extends AsyncHttpClient {
 
         private static String getVersionName(Context context) {
             String appVersion = null;
@@ -338,7 +338,7 @@ public class RestAdapter extends Adapter {
         private Context context;
         private String baseUrl;
 
-        public HttpClient(Context context, String baseUrl) {
+        public RestHttpClient(Context context, String baseUrl) {
             if (baseUrl == null) {
                 throw new IllegalArgumentException(
                 		"The baseUrl cannot be null");
