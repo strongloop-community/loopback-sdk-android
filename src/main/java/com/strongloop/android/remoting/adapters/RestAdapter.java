@@ -15,9 +15,9 @@ import com.loopj.android.http.RequestParams;
 import com.strongloop.android.remoting.JsonUtil;
 
 import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -383,8 +383,7 @@ public class RestAdapter extends Adapter {
                     uri.appendEncodedPath(path);
                 }
             }
-            String contentType = null;
-            HttpEntity body = null;
+            AbstractHttpEntity body = null;
             RequestParams requestParams = null;
             String charset = "utf-8";
 
@@ -402,10 +401,6 @@ public class RestAdapter extends Adapter {
                 else if (parameterEncoding == ParameterEncoding.FORM_URL) {
                 	// NOTE: Code for "x-www-form-urlencoded" is not used
                 	// and is untested.
-                    contentType =
-                    		"application/x-www-form-urlencoded; charset=" +
-                    		charset;
-
                     List<NameValuePair> nameValuePairs =
                     		new ArrayList<NameValuePair>();
                     for (Map.Entry<String, ? extends Object> entry :
@@ -417,6 +412,8 @@ public class RestAdapter extends Adapter {
                     try {
                         body = new UrlEncodedFormEntity(nameValuePairs,
                         		charset);
+                        body.setContentType(
+                                "application/x-www-form-urlencoded; charset=" + charset);
                     }
                     catch (UnsupportedEncodingException e) {
                         // Won't happen
@@ -437,7 +434,6 @@ public class RestAdapter extends Adapter {
                     }
                 }
                 else if (parameterEncoding == ParameterEncoding.JSON) {
-                    contentType = "application/json; charset=" + charset;
                     String s = "";
                     try {
                         s = String.valueOf(JsonUtil.toJson(parameters));
@@ -447,6 +443,7 @@ public class RestAdapter extends Adapter {
                     }
                     try {
                         body = new StringEntity(s, charset);
+                        body.setContentType("application/json; charset=" + charset);
                     }
                     catch (UnsupportedEncodingException e) {
                         // Won't happen
@@ -471,12 +468,12 @@ public class RestAdapter extends Adapter {
             }
             else if ("POST".equalsIgnoreCase(method)) {
                 if (requestParams != null)
-                    post(context, url, headers, requestParams, contentType, httpCallback);
+                    post(context, url, headers, requestParams, null, httpCallback);
                 else
-                    post(context, url, headers, body, contentType, httpCallback);
+                    post(context, url, headers, body, null, httpCallback);
             }
             else if ("PUT".equalsIgnoreCase(method)) {
-                put(context, url, headers, body, contentType, httpCallback);
+                put(context, url, headers, body, null, httpCallback);
             }
             else {
                 throw new IllegalArgumentException("Illegal method: " +
@@ -484,7 +481,7 @@ public class RestAdapter extends Adapter {
             }
         }
 
-        private void logRequest(String method, String url, HttpEntity body, RequestParams requestParams) {
+        private void logRequest(String method, String url, AbstractHttpEntity body, RequestParams requestParams) {
             if (!Log.isLoggable(TAG, Log.DEBUG)) return;
             Log.d(TAG, method + " " + url);
             if (requestParams != null)
