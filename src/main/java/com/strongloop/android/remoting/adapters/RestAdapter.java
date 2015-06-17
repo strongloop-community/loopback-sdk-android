@@ -19,6 +19,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -26,11 +27,31 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.common.collect.Multimap;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.strongloop.android.remoting.JsonUtil;
+import com.strongloop.android.remoting.RestUtil;
+
+import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 /**
  * A specific {@link Adapter} implementation for RESTful servers.
@@ -45,7 +66,7 @@ import com.strongloop.android.remoting.JsonUtil;
 public class RestAdapter extends Adapter {
     private static final String TAG = "remoting.RestAdapter";
 
-    private HttpClient client;
+    private RestHttpClient client;
     private RestContract contract;
 
     public RestAdapter(Context context, String url) {
@@ -84,7 +105,7 @@ public class RestAdapter extends Adapter {
             client = null;
         }
         else {
-            client = new HttpClient(context, url);
+            client = new RestHttpClient(context, url);
             client.addHeader("Accept", "application/json");
         }
     }
@@ -309,7 +330,7 @@ public class RestAdapter extends Adapter {
         FORM_MULTIPART
     }
 
-    private static class HttpClient extends AsyncHttpClient {
+    private static class RestHttpClient extends AsyncHttpClient {
 
         private static String getVersionName(Context context) {
             String appVersion = null;
@@ -338,7 +359,7 @@ public class RestAdapter extends Adapter {
         private Context context;
         private String baseUrl;
 
-        public HttpClient(Context context, String baseUrl) {
+        public RestHttpClient(Context context, String baseUrl) {
             if (baseUrl == null) {
                 throw new IllegalArgumentException(
                 		"The baseUrl cannot be null");
@@ -383,8 +404,7 @@ public class RestAdapter extends Adapter {
                     uri.appendEncodedPath(path);
                 }
             }
-            String contentType = null;
-            HttpEntity body = null;
+            AbstractHttpEntity body = null;
             RequestParams requestParams = null;
             String charset = "utf-8";
 
@@ -392,20 +412,36 @@ public class RestAdapter extends Adapter {
                 if ("GET".equalsIgnoreCase(method) ||
                         "HEAD".equalsIgnoreCase(method) ||
                         "DELETE".equalsIgnoreCase(method)) {
+                    boolean processed = false;
+                    // Preferably use "stringified" JSON in REST queries
+                    try {
+                        Object obj = JsonUtil.toJson(parameters);
+                        if(obj instanceof JSONObject) {
+                            JSONObject json = (JSONObject) obj;
+                            if(json.optJSONObject("filter") != null) {
+                                JSONObject filter = json.optJSONObject("filter");
+                                String s = String.valueOf(filter);
+                                uri.appendQueryParameter("filter", s);
+                                processed = true;
+                            }
+                        }
+                    }
+                    catch (JSONException e) {
+                        Log.e(TAG, "Couldn't convert parameters to JSON", e);
+                    }
 
-                    for (Map.Entry<String, ? extends Object> entry :
-                            flattenParameters(parameters).entrySet()) {
-                        uri.appendQueryParameter(entry.getKey(),
-                        		String.valueOf(entry.getValue()));
+                    if(!processed) {
+                        // Fallback to HTTP query string syntax
+                        for (Map.Entry<String, ? extends Object> entry :
+                                new RestUtil().flattenParameters(parameters).entries()) {
+                            uri.appendQueryParameter(entry.getKey(),
+                                    String.valueOf(entry.getValue()));
+                        }
                     }
                 }
                 else if (parameterEncoding == ParameterEncoding.FORM_URL) {
                 	// NOTE: Code for "x-www-form-urlencoded" is not used
                 	// and is untested.
-                    contentType =
-                    		"application/x-www-form-urlencoded; charset=" +
-                    		charset;
-
                     List<NameValuePair> nameValuePairs =
                     		new ArrayList<NameValuePair>();
                     for (Map.Entry<String, ? extends Object> entry :
@@ -417,6 +453,8 @@ public class RestAdapter extends Adapter {
                     try {
                         body = new UrlEncodedFormEntity(nameValuePairs,
                         		charset);
+                        body.setContentType(
+                                "application/x-www-form-urlencoded; charset=" + charset);
                     }
                     catch (UnsupportedEncodingException e) {
                         // Won't happen
@@ -431,13 +469,12 @@ public class RestAdapter extends Adapter {
 
                     try {
                         requestParams = buildRequestParameters(
-                                flattenParameters(parameters));
+                                new RestUtil().flattenParameters(parameters));
                     } catch (FileNotFoundException e1) {
                         throw new IllegalArgumentException("Invalid File parameter");
                     }
                 }
                 else if (parameterEncoding == ParameterEncoding.JSON) {
-                    contentType = "application/json; charset=" + charset;
                     String s = "";
                     try {
                         s = String.valueOf(JsonUtil.toJson(parameters));
@@ -447,6 +484,7 @@ public class RestAdapter extends Adapter {
                     }
                     try {
                         body = new StringEntity(s, charset);
+                        body.setContentType("application/json; charset=" + charset);
                     }
                     catch (UnsupportedEncodingException e) {
                         // Won't happen
@@ -471,12 +509,12 @@ public class RestAdapter extends Adapter {
             }
             else if ("POST".equalsIgnoreCase(method)) {
                 if (requestParams != null)
-                    post(context, url, headers, requestParams, contentType, httpCallback);
+                    post(context, url, headers, requestParams, null, httpCallback);
                 else
-                    post(context, url, headers, body, contentType, httpCallback);
+                    post(context, url, headers, body, null, httpCallback);
             }
             else if ("PUT".equalsIgnoreCase(method)) {
-                put(context, url, headers, body, contentType, httpCallback);
+                put(context, url, headers, body, null, httpCallback);
             }
             else {
                 throw new IllegalArgumentException("Illegal method: " +
@@ -484,7 +522,7 @@ public class RestAdapter extends Adapter {
             }
         }
 
-        private void logRequest(String method, String url, HttpEntity body, RequestParams requestParams) {
+        private void logRequest(String method, String url, AbstractHttpEntity body, RequestParams requestParams) {
             if (!Log.isLoggable(TAG, Log.DEBUG)) return;
             Log.d(TAG, method + " " + url);
             if (requestParams != null)
@@ -501,48 +539,13 @@ public class RestAdapter extends Adapter {
             }
         }
 
-        private Map<String, Object> flattenParameters(
-                final Map<String, ? extends Object> parameters) {
-            return flattenParameters(null, parameters);
-        }
-
-        @SuppressWarnings("unchecked")
-        private Map<String, Object> flattenParameters(
-                final String keyPrefix,
-                final Map<String, ? extends Object> parameters) {
-
-            // This method converts nested maps into a flat list
-            //   Input:  { "here": { "lat": 10, "lng": 20 }
-            //   Output: { "here[lat]": 10, "here[lng]": 20 }
-
-            Map<String, Object> result = new HashMap<String, Object>();
-
-            for (Map.Entry<String, ? extends Object> entry
-                    : parameters.entrySet()) {
-
-                String key = keyPrefix != null
-                        ? keyPrefix + "[" + entry.getKey() + "]"
-                        : entry.getKey();
-
-                Object value = entry.getValue();
-
-                if (value instanceof Map) {
-                    result.putAll(flattenParameters(key, (Map) value));
-                } else {
-                    result.put(key, value);
-                }
-            }
-
-            return result;
-        }
-
         static protected RequestParams buildRequestParameters(
-                Map<String, ? extends Object> parameters) throws FileNotFoundException
+                Multimap<String, ? extends Object> parameters) throws FileNotFoundException
         {
             RequestParams requestParams = new RequestParams();
 
             for (Map.Entry<String, ? extends Object> entry :
-                    parameters.entrySet()) {
+                    parameters.entries()) {
                 Object value = entry.getValue();
                 if ( value != null ) {
                     if ( value instanceof java.io.File ) {

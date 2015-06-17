@@ -96,6 +96,8 @@ public class ModelRepository<T extends Model> extends RestRepository<T> {
                 className + ".prototype.remove");
         contract.addItem(new RestContractItem("/" + nameForRestUrl + "/:id", "GET"),
                 className + ".findById");
+        contract.addItem(new RestContractItem("/" + nameForRestUrl + "/findOne", "GET"),
+                className + ".findOne");
         contract.addItem(new RestContractItem("/" + nameForRestUrl, "GET"),
                 className + ".all");
 
@@ -145,7 +147,38 @@ public class ModelRepository<T extends Model> extends RestRepository<T> {
      * @param callback The callback to be executed when finished.
      */
     public void findAll(final ListCallback<T> callback) {
-        invokeStaticMethod("all", null,
+        find(null, callback);
+    }
+
+    /**
+     * Finds and downloads all models of this type on and from the server.
+     * that match the specified filter
+     * @param parameters filter.
+     * @param callback The callback to be executed when finished.
+     */
+    public void find(Map<String, ? extends Object> parameters, final ListCallback<T> callback) {
+        invokeStaticMethod("all",
+                parameters,
                 new JsonArrayParser<T>(this, callback));
+    }
+
+    /**
+     * Finds and downloads the first model of this type on and from the server.
+     * @param callback The callback to be executed when finished.
+     */
+    public void findOne(final ObjectCallback<T> callback) {
+        findOne(null, callback);
+    }
+
+    /**
+     * Finds and downloads the first model of this type on and from the server.
+     * that match the specified filter
+     * @param parameters filter.
+     * @param callback The callback to be executed when finished.
+     */
+    public void findOne(Map<String, ? extends Object> parameters, final ObjectCallback<T> callback) {
+        invokeStaticMethod("findOne",
+                parameters,
+                new JsonObjectParser<T>(this, callback));
     }
 }

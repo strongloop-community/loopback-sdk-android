@@ -1,11 +1,5 @@
 package com.strongloop.android.loopback;
 
-import java.util.TimeZone;
-
-import org.apache.http.client.HttpResponseException;
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -14,6 +8,13 @@ import android.util.Log;
 
 import com.strongloop.android.loopback.callbacks.VoidCallback;
 import com.strongloop.android.remoting.BeanUtil;
+import com.strongloop.android.remoting.Transient;
+
+import org.apache.http.client.HttpResponseException;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.TimeZone;
 
 /**
  * This class represents the Installation instance assigned to
@@ -360,6 +361,7 @@ public class LocalInstallation {
         }
     }
 
+    @Transient
     @SuppressWarnings("ConstantConditions")
     private PackageInfo getPackageInfo()
             throws PackageManager.NameNotFoundException {
@@ -367,6 +369,7 @@ public class LocalInstallation {
                 .getPackageInfo(applicationContext.getPackageName(), 0);
     }
 
+    @Transient
     private SharedPreferences getSharedPreferences() {
         return applicationContext.getSharedPreferences(
                 SHARED_PREFERENCES_NAME,
