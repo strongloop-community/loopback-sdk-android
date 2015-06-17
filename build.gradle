@@ -1,7 +1,5 @@
 group = 'com.strongloop';
 
-logger.info('**JVM VERSION** ' + org.gradle.internal.jvm.Jvm.current())
-
 buildscript {
   repositories {
       mavenCentral()
@@ -17,12 +15,14 @@ apply plugin: 'com.android.library'
 apply plugin: 'android-maven'
 apply plugin: 'signing'
 
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FilenameUtils
+import org.gradle.internal.jvm.Jvm;
 
 def sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-def isJenkinsBuild = System.getenv("BUILD_NUMBER")
 def isReleaseBuild = !version.contains("SNAPSHOT")
 def shouldPublishToMavenCentral = isReleaseBuild
+
+logger.info('**JVM VERSION** ' + Jvm.current())
 
 repositories {
     mavenLocal()
@@ -34,18 +34,18 @@ repositories {
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         minSdkVersion 8
-        targetSdkVersion 20
+        targetSdkVersion 21
     }
 }
 
 dependencies {
     compile 'org.atteo:evo-inflector:1.2'
-    compile 'com.google.guava:guava:17.0'
-    compile 'com.loopj.android:android-async-http:1.4.5'
+    compile 'com.google.guava:guava:18.0'
+    compile 'com.loopj.android:android-async-http:1.4.6'
 }
 
 task unpackJavadocIncludes(type: Sync) {
