@@ -10,9 +10,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Multisets;
 import com.strongloop.android.remoting.JsonUtil;
+import com.strongloop.android.remoting.RestUtil;
 import com.strongloop.android.remoting.adapters.Adapter;
 
 public class JsonUtilTest extends TestCase {
@@ -85,6 +91,69 @@ public class JsonUtilTest extends TestCase {
         List<?> toList = JsonUtil.fromJson(
                 (JSONArray)JsonUtil.toJson(fromList));
         assertEquals(fromList, toList);
+    }
+
+    public void testRestUtils() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "filter", ImmutableMap.of("include", ImmutableList.of("homeTeam", "visitingTeam")));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "filter[include]",
+                "homeTeam",
+                "filter[include]",
+                "visitingTeam");
+
+        assertEquals(result, flattened);
+    }
+
+    public void testRestUtils2() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "where", ImmutableMap.of("and", ImmutableList.of("homeTeam", "visitingTeam")));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "where[and][0]",
+                "homeTeam",
+                "where[and][1]",
+                "visitingTeam");
+
+        assertEquals(result, flattened);
+    }
+
+    public void testRestUtils3() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "where", ImmutableMap.of("and", ImmutableList.of("homeTeam", "visitingTeam", ImmutableMap.of("other", "3"))));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "where[and][0]",
+                "homeTeam",
+                "where[and][1]",
+                "visitingTeam",
+                "where[and][2][other]",
+                "3");
+
+        assertEquals(result, flattened);
+    }
+
+    public void testRestUtils4() throws JSONException {
+        Map<String, ? extends Object> parameters;
+        parameters = ImmutableMap.of(
+                "filter", ImmutableMap.of(
+                        "where",
+                        ImmutableMap.of("and", ImmutableList.of(
+                                ImmutableMap.of("division", "332323")))));
+
+        Multimap<String, Object> result = new RestUtil().flattenParameters(parameters);
+        Multimap<String, ? extends Object> flattened = ImmutableMultimap.of(
+                "filter[where][and][0][division]",
+                "332323");
+
+        assertEquals(result, flattened);
     }
 
     // JSONObject doesn't implement an equals() method, so this is required.

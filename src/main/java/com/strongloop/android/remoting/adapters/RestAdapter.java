@@ -2,17 +2,38 @@
 
 package com.strongloop.android.remoting.adapters;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.common.collect.Multimap;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.strongloop.android.remoting.JsonUtil;
+import com.strongloop.android.remoting.RestUtil;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -391,11 +412,31 @@ public class RestAdapter extends Adapter {
                 if ("GET".equalsIgnoreCase(method) ||
                         "HEAD".equalsIgnoreCase(method) ||
                         "DELETE".equalsIgnoreCase(method)) {
+                    boolean processed = false;
+                    // Preferably use "stringified" JSON in REST queries
+                    try {
+                        Object obj = JsonUtil.toJson(parameters);
+                        if(obj instanceof JSONObject) {
+                            JSONObject json = (JSONObject) obj;
+                            if(json.optJSONObject("filter") != null) {
+                                JSONObject filter = json.optJSONObject("filter");
+                                String s = String.valueOf(filter);
+                                uri.appendQueryParameter("filter", s);
+                                processed = true;
+                            }
+                        }
+                    }
+                    catch (JSONException e) {
+                        Log.e(TAG, "Couldn't convert parameters to JSON", e);
+                    }
 
-                    for (Map.Entry<String, ? extends Object> entry :
-                            flattenParameters(parameters).entrySet()) {
-                        uri.appendQueryParameter(entry.getKey(),
-                        		String.valueOf(entry.getValue()));
+                    if(!processed) {
+                        // Fallback to HTTP query string syntax
+                        for (Map.Entry<String, ? extends Object> entry :
+                                new RestUtil().flattenParameters(parameters).entries()) {
+                            uri.appendQueryParameter(entry.getKey(),
+                                    String.valueOf(entry.getValue()));
+                        }
                     }
                 }
                 else if (parameterEncoding == ParameterEncoding.FORM_URL) {
@@ -428,7 +469,7 @@ public class RestAdapter extends Adapter {
 
                     try {
                         requestParams = buildRequestParameters(
-                                flattenParameters(parameters));
+                                new RestUtil().flattenParameters(parameters));
                     } catch (FileNotFoundException e1) {
                         throw new IllegalArgumentException("Invalid File parameter");
                     }
@@ -488,48 +529,13 @@ public class RestAdapter extends Adapter {
                 Log.d(TAG, requestParams.toString());
         }
 
-        private Map<String, Object> flattenParameters(
-                final Map<String, ? extends Object> parameters) {
-            return flattenParameters(null, parameters);
-        }
-
-        @SuppressWarnings("unchecked")
-        private Map<String, Object> flattenParameters(
-                final String keyPrefix,
-                final Map<String, ? extends Object> parameters) {
-
-            // This method converts nested maps into a flat list
-            //   Input:  { "here": { "lat": 10, "lng": 20 }
-            //   Output: { "here[lat]": 10, "here[lng]": 20 }
-
-            Map<String, Object> result = new HashMap<String, Object>();
-
-            for (Map.Entry<String, ? extends Object> entry
-                    : parameters.entrySet()) {
-
-                String key = keyPrefix != null
-                        ? keyPrefix + "[" + entry.getKey() + "]"
-                        : entry.getKey();
-
-                Object value = entry.getValue();
-
-                if (value instanceof Map) {
-                    result.putAll(flattenParameters(key, (Map) value));
-                } else {
-                    result.put(key, value);
-                }
-            }
-
-            return result;
-        }
-
         static protected RequestParams buildRequestParameters(
-                Map<String, ? extends Object> parameters) throws FileNotFoundException
+                Multimap<String, ? extends Object> parameters) throws FileNotFoundException
         {
             RequestParams requestParams = new RequestParams();
 
             for (Map.Entry<String, ? extends Object> entry :
-                    parameters.entrySet()) {
+                    parameters.entries()) {
                 Object value = entry.getValue();
                 if ( value != null ) {
                     if ( value instanceof java.io.File ) {
