@@ -2,6 +2,7 @@ package com.strongloop.android.remoting.test;
 
 import android.test.MoreAsserts;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.VirtualObject;
@@ -221,6 +222,52 @@ public class RestContractTest extends AsyncTestCase {
                         ImmutableMap.of("filter", filter),
                         expectJsonResponse("{\"where\":{\"age\":{\"gt\":21}}}")
                 );
+            }
+        });
+    }
+
+    public void testListNestedInObjectParameter() throws Throwable {
+        // In this test, we do not check for the exact value of query-string,
+        // but ensure that the value created by the android library
+        // is correctly parsed by the strong-remoting server.
+        // This way the test stays relevant (and passing) even if
+        // the query-string format changes in the future.
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                final Map parameters = ImmutableMap.of("filter",
+                        ImmutableMap.of("include",
+                            ImmutableList.of("homeTeam", "visitingTeam")));
+                adapter.invokeStaticMethod(
+                        "contract.list",
+                        ImmutableMap.of("filter", parameters),
+                        expectJsonResponse("{\"filter\":{\"include\":" +
+                            "[\"homeTeam\",\"visitingTeam\"]}}"));
+            }
+        });
+    }
+
+    public void testMapNestedInListNestedInObjectParameter() throws Throwable {
+        // In this test, we do not check for the exact value of query-string,
+        // but ensure that the value created by the android library
+        // is correctly parsed by the strong-remoting server.
+        // This way the test stays relevant (and passing) even if
+        // the query-string format changes in the future.
+        doAsyncTest(new AsyncTest() {
+            @Override
+            public void run() {
+                final Map parameters = ImmutableMap.of("where",
+                        ImmutableMap.of("and",
+                                ImmutableList.of("homeTeam",
+                                        "visitingTeam",
+                                        ImmutableMap.of("other", "3"))));
+
+                adapter.invokeStaticMethod(
+                        "contract.list",
+                        ImmutableMap.of("filter", parameters),
+                        expectJsonResponse("{\"where\":{\"and\":" +
+                                "[\"homeTeam\",\"visitingTeam\"," +
+                                "{\"other\":\"3\"}]}}"));
             }
         });
     }

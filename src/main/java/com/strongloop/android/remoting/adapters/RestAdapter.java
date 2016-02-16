@@ -24,13 +24,11 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * A specific {@link Adapter} implementation for RESTful servers.
@@ -392,11 +390,17 @@ public class RestAdapter extends Adapter {
                         "HEAD".equalsIgnoreCase(method) ||
                         "DELETE".equalsIgnoreCase(method)) {
 
-                    for (Map.Entry<String, ? extends Object> entry :
-                            flattenParameters(parameters).entrySet()) {
-                        uri.appendQueryParameter(entry.getKey(),
-                        		String.valueOf(entry.getValue()));
+                    try {
+                        for (Map.Entry<String, ? extends Object> entry :
+                                flattenParameters(parameters).entrySet()) {
+                            uri.appendQueryParameter(entry.getKey(),
+                                    String.valueOf(entry.getValue()));
+                        }
+                    } catch(JSONException ex) {
+                        // FIXME(bajtos) we should rethrow
+                        Log.e(TAG, "Couldn't convert parameters to JSON", ex);
                     }
+
                 }
                 else if (parameterEncoding == ParameterEncoding.FORM_URL) {
                 	// NOTE: Code for "x-www-form-urlencoded" is not used
@@ -429,6 +433,10 @@ public class RestAdapter extends Adapter {
                     try {
                         requestParams = buildRequestParameters(
                                 flattenParameters(parameters));
+
+                    } catch(JSONException e) {
+                        // FIXME(bajtos) we should rethrow
+                        Log.e(TAG, "Couldn't convert parameters to JSON", e);
                     } catch (FileNotFoundException e1) {
                         throw new IllegalArgumentException("Invalid File parameter");
                     }
@@ -439,6 +447,7 @@ public class RestAdapter extends Adapter {
                         s = String.valueOf(JsonUtil.toJson(parameters));
                     }
                     catch (JSONException e) {
+                        // FIXME(bajtos) we should rethrow
                         Log.e(TAG, "Couldn't convert parameters to JSON", e);
                     }
                     try {
@@ -489,32 +498,25 @@ public class RestAdapter extends Adapter {
         }
 
         private Map<String, Object> flattenParameters(
-                final Map<String, ? extends Object> parameters) {
-            return flattenParameters(null, parameters);
-        }
+                final Map<String, ? extends Object> parameters) throws JSONException {
 
-        @SuppressWarnings("unchecked")
-        private Map<String, Object> flattenParameters(
-                final String keyPrefix,
-                final Map<String, ? extends Object> parameters) {
-
-            // This method converts nested maps into a flat list
-            //   Input:  { "here": { "lat": 10, "lng": 20 }
-            //   Output: { "here[lat]": 10, "here[lng]": 20 }
+            // This method converts nested objects/arrays in to JSON strings
+            //   Input:  { "here": { "lat": 10, "lng": 20 } }
+            //   Output: { "here": "{\"lat\":10,\"lng\":20}" }
+            // NOTE(bajtos) while it's possible to encode nested values using
+            // qs syntax like here[lat]=10&here[lng]=20, the encoding gets rather
+            // complex quickly, especially when arrays are involved
 
             Map<String, Object> result = new HashMap<String, Object>();
 
             for (Map.Entry<String, ? extends Object> entry
                     : parameters.entrySet()) {
 
-                String key = keyPrefix != null
-                        ? keyPrefix + "[" + entry.getKey() + "]"
-                        : entry.getKey();
-
+                String key = entry.getKey();
                 Object value = entry.getValue();
 
-                if (value instanceof Map) {
-                    result.putAll(flattenParameters(key, (Map) value));
+                if (value instanceof Map || value instanceof List) {
+                    result.put(key, String.valueOf(JsonUtil.toJson(value)));
                 } else {
                     result.put(key, value);
                 }
