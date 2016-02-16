@@ -2,6 +2,7 @@ package com.strongloop.android.loopback.test;
 
 import android.util.Log;
 
+import com.google.common.collect.ImmutableMap;
 import com.strongloop.android.loopback.Model;
 import com.strongloop.android.loopback.RestAdapter;
 import com.strongloop.android.loopback.ModelRepository;
@@ -122,6 +123,30 @@ public class ModelTest extends AsyncTestCase {
                                 list.get(1).get("name"));
                         assertEquals("Invalid bars", 1,
                                 list.get(1).get("bars"));
+                        notifyFinished();
+                    }
+                });
+            }
+        });
+    }
+
+    public void testFindOne() throws Throwable {
+        doAsyncTest(new AsyncTest() {
+
+            @Override
+            public void run() {
+                final Map filter = ImmutableMap.of(
+                        "where", ImmutableMap.of(
+                                "name", "Bar"));
+                repository.findOne(
+                        ImmutableMap.of("filter", filter),
+                        new ObjectTestCallback<Model>() {
+
+                    @Override
+                    public void onSuccess(Model model) {
+                        assertNotNull("No models returned.", model);
+                        assertEquals("Invalid name", "Bar", model.get("name"));
+                        assertEquals("Invalid bars", 1, model.get("bars"));
                         notifyFinished();
                     }
                 });
