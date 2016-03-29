@@ -80,7 +80,6 @@ public class JsonUtil {
      * Converts a {@link org.json.JSONObject} to a {@link java.util.Map}.
      * @param object The JSON object to convert.
      * @return a map, or <code>null</code> if the object is <code>null</code>.
-     * @throws JSONException If the object cannot be converted.
      */
     public static Map<String, Object> fromJson(JSONObject object) {
         if (object == null) {
@@ -101,7 +100,6 @@ public class JsonUtil {
      * Converts a {@link org.json.JSONArray} to a {@link java.util.List}.
      * @param array The JSON array to convert.
      * @return a list, or <code>null</code> if the array is <code>null</code>.
-     * @throws JSONException If the array cannot be converted.
      */
     public static List<Object> fromJson(JSONArray array) {
         if (array == null) {
