@@ -3,6 +3,7 @@ package com.strongloop.android.remoting;
 import android.util.Log;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ public class BeanUtil {
                         setter = objectClass.getDeclaredMethod(setterName, value.getClass());
                     }
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
 
@@ -60,6 +62,18 @@ public class BeanUtil {
                     setter.invoke(object, value);
                 } catch (Exception e) {
                     Log.e("BeanUtil", setterName + "() failed", e);
+                }
+            } else {
+                Log.e("BeanUtil", setterName + "() not found ");
+                Field[] fs = includeSuperClasses ? objectClass.getFields() : objectClass.getDeclaredFields();
+                for(Field f:fs){
+                    if(f.getName().equals(key)){
+                        try {
+                            f.set(object,value);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         }
