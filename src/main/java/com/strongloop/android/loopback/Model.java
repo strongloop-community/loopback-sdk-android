@@ -2,15 +2,18 @@
 
 package com.strongloop.android.loopback;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONObject;
+import android.util.Log;
 
 import com.strongloop.android.loopback.callbacks.VoidCallback;
 import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
+
+import org.json.JSONObject;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A local representative of a single model instance on the server. The data is
@@ -18,7 +21,7 @@ import com.strongloop.android.remoting.adapters.Adapter;
  * server easily.
  */
 public class Model extends VirtualObject {
-
+    private static final String TAG = "Model";
     /**
      * @deprecated Use {link VoidCallback} instead.
      */
@@ -29,7 +32,7 @@ public class Model extends VirtualObject {
     private Map<String, Object> overflow = new HashMap<String, Object>();
 
     public Model(Repository repository,
-            Map<String, ? extends Object> creationParameters) {
+                 Map<String, ? extends Object> creationParameters) {
         super(repository, creationParameters);
     }
 
@@ -39,6 +42,7 @@ public class Model extends VirtualObject {
 
     /**
      * Gets the model's id field.
+     *
      * @return The id.
      */
     public Object getId() {
@@ -51,6 +55,7 @@ public class Model extends VirtualObject {
 
     /**
      * Gets the value associated with a given key.
+     *
      * @param key The key for which to return the corresponding value.
      * @return The value associated with the key, or <code>null</code> if no
      * value is associated with the key.
@@ -63,7 +68,7 @@ public class Model extends VirtualObject {
      * Adds a given key-value pair to the dictionary.
      *
      * @param key The key for value. If the key already exists
-     * in the dictionary, the specified value takes its place.
+     *  in the dictionary, the specified value takes its place.
      * @param value The value for the key. The value may be <code>null</code>.
      */
     public void put(String key, Object value) {
@@ -72,6 +77,7 @@ public class Model extends VirtualObject {
 
     /**
      * Adds all the specified params to the dictionary.
+     *
      * @param params The params to add.
      */
     public void putAll(Map<String, ? extends Object> params) {
@@ -84,9 +90,22 @@ public class Model extends VirtualObject {
      */
     public Map<String, ? extends Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
+        Field[] fs = this.getClass().getDeclaredFields();
+        for (Field field : fs) {
+            try {
+                if(Log.isLoggable(TAG,Log.ERROR)){
+                    Log.e(TAG, field.getName() + ":" + field.get(this));
+                }
+                overflow.put(field.getName(), field.get(this));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
         map.putAll(overflow);
         map.put("id", getId());
         map.putAll(super.toMap());
+
+
         return map;
     }
 
@@ -101,24 +120,25 @@ public class Model extends VirtualObject {
         invokeMethod(id == null ? "create" : "save", toMap(),
                 new Adapter.JsonObjectCallback() {
 
-            @Override
-            public void onError(Throwable t) {
-                callback.onError(t);
-            }
+                    @Override
+                    public void onError(Throwable t) {
+                        callback.onError(t);
+                    }
 
-            @Override
-            public void onSuccess(JSONObject response) {
-                Object id = response.opt("id");
-                if (id != null) {
-                    setId(id);
-                }
-                callback.onSuccess();
-            }
-        });
+                    @Override
+                    public void onSuccess(JSONObject response) {
+                        Object id = response.opt("id");
+                        if (id != null) {
+                            setId(id);
+                        }
+                        callback.onSuccess();
+                    }
+                });
     }
 
     /**
      * Destroys the Model from the server.
+     *
      * @param callback The callback to be executed when finished.
      */
     public void destroy(final VoidCallback callback) {
