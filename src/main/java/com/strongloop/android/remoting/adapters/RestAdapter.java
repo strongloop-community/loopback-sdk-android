@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * A specific {@link Adapter} implementation for RESTful servers.
- * <p/>
+ *
  * In addition to implementing the {@link Adapter} interface,
  * <code>RestAdapter</code> contains a single {@link RestContract} to map
  * remote methods to custom HTTP routes. This is only required if the HTTP
@@ -54,7 +54,6 @@ public class RestAdapter extends Adapter {
     /**
      * Gets this adapter's {@link RestContract}, a custom contract for
      * fine-grained route configuration.
-     *
      * @return the contract.
      */
     public RestContract getContract() {
@@ -64,17 +63,13 @@ public class RestAdapter extends Adapter {
     /**
      * Get the underlying HTTP client. This allows subclasses to add
      * custom headers like Authorization.
-     *
      * @return the client.
      */
-    protected AsyncHttpClient getClient() {
-        return client;
-    }
+    protected AsyncHttpClient getClient() { return client; }
 
     /**
      * Sets this adapter's {@link RestContract}, a custom contract for
      * fine-grained route configuration.
-     *
      * @param contract The contract.
      */
     public void setContract(RestContract contract) {
@@ -85,7 +80,8 @@ public class RestAdapter extends Adapter {
     public void connect(Context context, String url) {
         if (url == null) {
             client = null;
-        } else {
+        }
+        else {
             client = new RestHttpClient(context, url);
             client.addHeader("Accept", "application/json");
         }
@@ -100,13 +96,13 @@ public class RestAdapter extends Adapter {
      * {@inheritDoc}
      *
      * @throws IllegalStateException if the contract is not set
-     *                               (see {@link #setContract(RestContract)})
-     *                               or the adapter is not connected.
+     * (see {@link #setContract(RestContract)})
+     * or the adapter is not connected.
      */
     @Override
     public void invokeStaticMethod(String method,
-                                   Map<String, ? extends Object> parameters,
-                                   final Callback callback) {
+            Map<String, ? extends Object> parameters,
+            final Callback callback) {
         AsyncHttpResponseHandler httpHandler = new CallbackHandler(callback);
         invokeStaticMethod(method, parameters, httpHandler);
     }
@@ -115,8 +111,8 @@ public class RestAdapter extends Adapter {
      * {@inheritDoc}
      *
      * @throws IllegalStateException if the contract is not set
-     *                               (see {@link #setContract(RestContract)})
-     *                               or the adapter is not connected.
+     * (see {@link #setContract(RestContract)})
+     * or the adapter is not connected.
      */
     @Override
     public void invokeStaticMethod(String method,
@@ -142,14 +138,14 @@ public class RestAdapter extends Adapter {
      * {@inheritDoc}
      *
      * @throws IllegalStateException if the contract is not set
-     *                               (see {@link #setContract(RestContract)})
-     *                               or the adapter is not connected.
+     * (see {@link #setContract(RestContract)})
+     * or the adapter is not connected.
      */
     @Override
     public void invokeInstanceMethod(String method,
-                                     Map<String, ? extends Object> constructorParameters,
-                                     Map<String, ? extends Object> parameters,
-                                     final Callback callback) {
+            Map<String, ? extends Object> constructorParameters,
+            Map<String, ? extends Object> parameters,
+            final Callback callback) {
         AsyncHttpResponseHandler httpHandler = new CallbackHandler(callback);
         invokeInstanceMethod(method, constructorParameters, parameters, httpHandler);
     }
@@ -158,8 +154,8 @@ public class RestAdapter extends Adapter {
      * {@inheritDoc}
      *
      * @throws IllegalStateException if the contract is not set
-     *                               (see {@link #setContract(RestContract)})
-     *                               or the adapter is not connected.
+     * (see {@link #setContract(RestContract)})
+     * or the adapter is not connected.
      */
     @Override
     public void invokeInstanceMethod(String method,
@@ -168,9 +164,7 @@ public class RestAdapter extends Adapter {
                                      final BinaryCallback callback) {
         AsyncHttpResponseHandler httpHandler = new BinaryHandler(callback);
         invokeInstanceMethod(method, constructorParameters, parameters, httpHandler);
-    }
-
-    ;
+    };
 
     private void invokeInstanceMethod(String method,
                                       Map<String, ? extends Object> constructorParameters,
@@ -264,13 +258,12 @@ public class RestAdapter extends Adapter {
                               org.apache.http.Header[] headers,
                               byte[] responseBody,
                               java.lang.Throwable error) {
-            if (Log.isLoggable(TAG, Log.ERROR)) {
+            if (Log.isLoggable(TAG, Log.WARN)) {
                 String message;
                 if (error != null) {
                     message = error.toString();
-                    Log.e(TAG, "HTTP request (binary) failed: " + message);
+                    Log.w(TAG, "HTTP request (binary) failed: " + message);
                 }
-// else {
                 message = statusCode + "\n";
                 try {
                     message += new String(responseBody, getCharset());
@@ -278,8 +271,7 @@ public class RestAdapter extends Adapter {
                     message += new String(responseBody);
                 }
 
-//                }
-                Log.e(TAG, "HTTP request (binary) failed: " + message);
+                Log.w(TAG, "HTTP request (binary) failed: " + message);
             }
             callback.onError(error);
         }
@@ -323,9 +315,10 @@ public class RestAdapter extends Adapter {
             String appVersion = null;
             try {
                 PackageInfo pinfo = context.getPackageManager().getPackageInfo(
-                        context.getPackageName(), 0);
+                		context.getPackageName(), 0);
                 appVersion = pinfo.versionName;
-            } catch (NameNotFoundException e) {
+            }
+            catch (NameNotFoundException e) {
                 // Do nothing
             }
             return (appVersion != null) ? appVersion : "";
@@ -365,26 +358,28 @@ public class RestAdapter extends Adapter {
                 String appPackageName = context.getPackageName();
                 String appVersion = getVersionName(context);
                 appName = appPackageName + "/" + appVersion;
-            } else {
+            }
+            else {
                 appName = "StongLoopRemoting App";
             }
             String deviceName = getDeviceName();
             String androidVersion = android.os.Build.VERSION.RELEASE +
-                    "/API-" + android.os.Build.VERSION.SDK_INT;
+            		"/API-" + android.os.Build.VERSION.SDK_INT;
             String userAgent = appName + " (" + deviceName +
-                    " Android " + androidVersion + ")";
+            		" Android " + androidVersion + ")";
             setUserAgent(userAgent);
         }
 
         public void request(String method, String path,
-                            Map<String, ? extends Object> parameters,
-                            ParameterEncoding parameterEncoding,
-                            final AsyncHttpResponseHandler httpCallback) {
+                Map<String, ? extends Object> parameters,
+                ParameterEncoding parameterEncoding,
+                final AsyncHttpResponseHandler httpCallback) {
             Uri.Builder uri = Uri.parse(baseUrl).buildUpon();
             if (path != null) {
                 if (path.startsWith("/")) {
                     uri.appendEncodedPath(path.substring(1));
-                } else {
+                }
+                else {
                     uri.appendEncodedPath(path);
                 }
             }
@@ -403,32 +398,35 @@ public class RestAdapter extends Adapter {
                             uri.appendQueryParameter(entry.getKey(),
                                     String.valueOf(entry.getValue()));
                         }
-                    } catch (JSONException ex) {
+                    } catch(JSONException ex) {
                         // FIXME(bajtos) we should rethrow
                         Log.e(TAG, "Couldn't convert parameters to JSON", ex);
                     }
 
-                } else if (parameterEncoding == ParameterEncoding.FORM_URL) {
-                    // NOTE: Code for "x-www-form-urlencoded" is not used
-                    // and is untested.
+                }
+                else if (parameterEncoding == ParameterEncoding.FORM_URL) {
+                	// NOTE: Code for "x-www-form-urlencoded" is not used
+                	// and is untested.
                     List<NameValuePair> nameValuePairs =
-                            new ArrayList<NameValuePair>();
+                    		new ArrayList<NameValuePair>();
                     for (Map.Entry<String, ? extends Object> entry :
-                            parameters.entrySet()) {
+                    	parameters.entrySet()) {
                         nameValuePairs.add(
-                                new BasicNameValuePair(entry.getKey(),
-                                        String.valueOf(entry.getValue())));
+                        		new BasicNameValuePair(entry.getKey(),
+                        				String.valueOf(entry.getValue())));
                     }
                     try {
                         body = new UrlEncodedFormEntity(nameValuePairs,
-                                charset);
+                        		charset);
                         body.setContentType(
                                 "application/x-www-form-urlencoded; charset=" + charset);
-                    } catch (UnsupportedEncodingException e) {
+                    }
+                    catch (UnsupportedEncodingException e) {
                         // Won't happen
                         Log.e(TAG, "Couldn't encode url params", e);
                     }
-                } else if (parameterEncoding == ParameterEncoding.FORM_MULTIPART) {
+                }
+                else if (parameterEncoding == ParameterEncoding.FORM_MULTIPART) {
                     if (!"POST".equalsIgnoreCase(method)) {
                         throw new UnsupportedOperationException(
                                 "RestAdapter does not support multipart PUT requests");
@@ -438,24 +436,27 @@ public class RestAdapter extends Adapter {
                         requestParams = buildRequestParameters(
                                 flattenParameters(parameters));
 
-                    } catch (JSONException e) {
+                    } catch(JSONException e) {
                         // FIXME(bajtos) we should rethrow
                         Log.e(TAG, "Couldn't convert parameters to JSON", e);
                     } catch (FileNotFoundException e1) {
                         throw new IllegalArgumentException("Invalid File parameter");
                     }
-                } else if (parameterEncoding == ParameterEncoding.JSON) {
+                }
+                else if (parameterEncoding == ParameterEncoding.JSON) {
                     String s = "";
                     try {
                         s = String.valueOf(JsonUtil.toJson(parameters));
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         // FIXME(bajtos) we should rethrow
                         Log.e(TAG, "Couldn't convert parameters to JSON", e);
                     }
                     try {
                         body = new StringEntity(s, charset);
                         body.setContentType("application/json; charset=" + charset);
-                    } catch (UnsupportedEncodingException e) {
+                    }
+                    catch (UnsupportedEncodingException e) {
                         // Won't happen
                         Log.e(TAG, "Couldn't encode JSON params", e);
                     }
@@ -472,16 +473,20 @@ public class RestAdapter extends Adapter {
 
             if ("GET".equalsIgnoreCase(method)) {
                 get(context, url, headers, null, httpCallback);
-            } else if ("DELETE".equalsIgnoreCase(method)) {
+            }
+            else if ("DELETE".equalsIgnoreCase(method)) {
                 delete(context, url, headers, httpCallback);
-            } else if ("POST".equalsIgnoreCase(method)) {
+            }
+            else if ("POST".equalsIgnoreCase(method)) {
                 if (requestParams != null)
                     post(context, url, headers, requestParams, null, httpCallback);
                 else
                     post(context, url, headers, body, null, httpCallback);
-            } else if ("PUT".equalsIgnoreCase(method)) {
+            }
+            else if ("PUT".equalsIgnoreCase(method)) {
                 put(context, url, headers, body, null, httpCallback);
-            } else {
+            }
+            else {
                 throw new IllegalArgumentException("Illegal method: " +
                         method + ". Only GET, POST, PUT, DELETE supported.");
             }
@@ -523,20 +528,24 @@ public class RestAdapter extends Adapter {
         }
 
         static protected RequestParams buildRequestParameters(
-                Map<String, ? extends Object> parameters) throws FileNotFoundException {
+                Map<String, ? extends Object> parameters) throws FileNotFoundException
+        {
             RequestParams requestParams = new RequestParams();
 
             for (Map.Entry<String, ? extends Object> entry :
                     parameters.entrySet()) {
                 Object value = entry.getValue();
-                if (value != null) {
-                    if (value instanceof java.io.File) {
-                        requestParams.put(entry.getKey(), (java.io.File) value);
-                    } else if (value instanceof StreamParam) {
+                if ( value != null ) {
+                    if ( value instanceof java.io.File ) {
+                        requestParams.put(entry.getKey(), (java.io.File)value);
+                    }
+                    else if (value instanceof StreamParam) {
                         ((StreamParam) value).putTo(requestParams, entry.getKey());
-                    } else if (value instanceof String) {
+                    }
+                    else if ( value instanceof String ) {
                         requestParams.put(entry.getKey(), (String) entry.getValue());
-                    } else {
+                    }
+                    else {
                         throw new IllegalArgumentException(
                                 "Unknown param type for RequestParams: "
                                         + value.getClass().getName());
