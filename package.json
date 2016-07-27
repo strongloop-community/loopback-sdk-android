@@ -23,5 +23,8 @@
     "loopback-component-storage": "1.x",
     "morgan": "^1.4.0",
     "strong-remoting": "^2.5.0"
+  },
+  "dependencies": {
+    "strong-globalize": "^2.5.8"
   }
 }
