@@ -16,15 +16,15 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "async": "~0.9.0",
-    "express": "^4.9.8",
-    "loopback": "^2.5.0",
-    "loopback-component-push": "1.x",
-    "loopback-component-storage": "1.x",
-    "morgan": "^1.4.0",
-    "strong-remoting": "^2.5.0"
+    "async": "^2.0.1",
+    "express": "^4.14.0",
+    "loopback": "^2.29.1",
+    "loopback-component-push": "^1.5.4",
+    "loopback-component-storage": "^1.9.0",
+    "morgan": "^1.7.0",
+    "strong-remoting": "^2.29.0"
   },
   "dependencies": {
-    "strong-globalize": "^2.5.8"
+    "strong-globalize": "^2.6.2"
   }
 }
