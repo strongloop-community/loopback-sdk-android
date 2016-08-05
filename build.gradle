@@ -46,6 +46,12 @@ android {
     }
 }
 
+println 'dumping repositories'
+repositories.all { r ->
+  println r.name + ': ' + r.url
+}
+println '--end--'
+
 dependencies {
     compile 'org.atteo:evo-inflector:1.2'
     compile 'com.google.guava:guava:18.0'
