@@ -108,5 +108,5 @@ app.use(require('morgan')('loopback> :method :url :status'));
 app.enableAuth();
 app.use(loopback.rest());
 app.listen(3000, function() {
-  console.log(g.f('{{LoopBack}} test server listening on {{http://localhost:3000/}}'));
+  g.log('{{LoopBack}} test server listening on {{http://localhost:%s/}}', app.get('port'));
 });

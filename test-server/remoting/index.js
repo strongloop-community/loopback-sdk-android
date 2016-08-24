@@ -23,7 +23,7 @@ app.use(remotes.handler('rest'));
 
 var server = require('http')
   .createServer(app)
-  .listen(3001, function() {
-    console.log(g.f(
-      '{{strong-remoting}} test server listening on {{http://localhost:3001/}}'));
+  .listen(0, function() {
+    g.log(
+      '{{strong-remoting}} test server listening on {{http://localhost:%s/}}', app.get('port'));
   });
