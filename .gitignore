@@ -41,5 +41,5 @@ node_modules
 project.properties
 
 !intl/
-intl/*
-!intl/en/
+
+
