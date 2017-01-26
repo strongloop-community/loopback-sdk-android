@@ -10,7 +10,7 @@ The Android Java SDK provides simple API calls that enable your Android app to a
 models and data sources using a comfortable, first-class Java interface instead 
 of using the clunky `AsyncHttpClient`, `JSONObject`, and similar interfaces.
 
-See the official [LoopBack Android SDK documentation](http://docs.strongloop.com/display/LB/Android+SDK).
+See the official [LoopBack Android SDK documentation](http://loopback.io/doc/en/lb3/Android-SDK.html).
 
 See also [SDK API Reference](http://apidocs.strongloop.com/loopback-sdk-android/api/index.html).
 
