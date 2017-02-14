@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public class BeanUtil {
-    public static void setProperties(Object object, Map<String, ? extends Object> properties, boolean includeSuperClasses) {
+    public static Object setProperties(Object object, Map<String, ? extends Object> properties, boolean includeSuperClasses) {
         if (object == null || properties == null) {
-            return;
+            return null;
         }
 
         Class<?> objectClass = object.getClass();
@@ -55,7 +55,18 @@ public class BeanUtil {
             // Invoke
             if (setter != null) {
                 if (setter.getAnnotation(Transient.class) != null) continue;
-
+                if(value instanceof Map){
+                    try {
+                        Object fieldInstance = objectClass.getDeclaredField(key).getType().newInstance();
+                        value = setProperties(fieldInstance, (Map<String, ? extends Object>) value, includeSuperClasses);
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchFieldException e) {
+                        e.printStackTrace();
+                    }
+                }
                 try {
                     setter.invoke(object, value);
                 } catch (Exception e) {
@@ -63,6 +74,7 @@ public class BeanUtil {
                 }
             }
         }
+        return object;
     }
 
     public static Map<String, Object> getProperties(Object object, boolean includeSuperClasses, boolean deepCopy) {
@@ -166,7 +178,7 @@ public class BeanUtil {
             }
         }
         else {
-            return value == null || parameterType.isAssignableFrom(value.getClass());
+            return value == null || value instanceof Map || parameterType.isAssignableFrom(value.getClass());
         }
     }
 

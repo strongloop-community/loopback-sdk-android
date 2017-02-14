@@ -45,7 +45,7 @@ public class Model extends VirtualObject {
         return id;
     }
 
-    /* package private */ void setId(Object id) {
+    /* package private */public void setId(Object id) {
         this.id = id;
     }
 
@@ -99,6 +99,26 @@ public class Model extends VirtualObject {
      */
     public void save(final VoidCallback callback) {
         invokeMethod(id == null ? "create" : "save", toMap(),
+                new Adapter.JsonObjectCallback() {
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+
+            @Override
+            public void onSuccess(JSONObject response) {
+                Object id = response.opt("id");
+                if (id != null) {
+                    setId(id);
+                }
+                callback.onSuccess();
+            }
+        });
+    }
+
+    public void upsert(final VoidCallback callback) {
+        invokeMethod(id == null ? "create" : "upsert", toMap(),
                 new Adapter.JsonObjectCallback() {
 
             @Override
