@@ -13,6 +13,7 @@
    * Run `npm install` in the terminal.
 
  * Compile and run unit-test:
+   * From the project root directory execute `npm install` to obtain all the project dependencies
    * Run test server in the terminal: `node test-server`
    * In Android Studio, right-click on strong-remoting-android and
      select "Run All Tests"
