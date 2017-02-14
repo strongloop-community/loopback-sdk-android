@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public class BeanUtil {
-    public static void setProperties(Object object, Map<String, ? extends Object> properties, boolean includeSuperClasses) {
+    public static Object setProperties(Object object, Map<String, ? extends Object> properties, boolean includeSuperClasses) {
         if (object == null || properties == null) {
-            return;
+            return null;
         }
 
         Class<?> objectClass = object.getClass();
@@ -55,7 +55,19 @@ public class BeanUtil {
             // Invoke
             if (setter != null) {
                 if (setter.getAnnotation(Transient.class) != null) continue;
-
+                //start to setting deep objects
+                if (value instanceof Map) {
+                    try {
+                        Object fieldInstance = objectClass.getDeclaredField(key).getType().newInstance();
+                        value = setProperties(fieldInstance, (Map<String, ? extends Object>) value, includeSuperClasses);
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchFieldException e) {
+                        e.printStackTrace();
+                    }
+                }
                 try {
                     setter.invoke(object, value);
                 } catch (Exception e) {
@@ -63,6 +75,7 @@ public class BeanUtil {
                 }
             }
         }
+        return object;
     }
 
     public static Map<String, Object> getProperties(Object object, boolean includeSuperClasses, boolean deepCopy) {
@@ -139,34 +152,28 @@ public class BeanUtil {
 
             if (parameterType == Boolean.TYPE) {
                 return valueClass == Boolean.class;
-            }
-            else if (parameterType == Byte.TYPE) {
+            } else if (parameterType == Byte.TYPE) {
                 return valueClass == Byte.class;
-            }
-            else if (parameterType == Character.TYPE) {
+            } else if (parameterType == Character.TYPE) {
                 return valueClass == Character.class;
-            }
-            else if (parameterType == Short.TYPE) {
+            } else if (parameterType == Short.TYPE) {
                 return valueClass == Short.class || valueClass == Byte.class;
-            }
-            else if (parameterType == Integer.TYPE) {
+            } else if (parameterType == Integer.TYPE) {
                 return valueClass == Integer.class || valueClass == Character.class || valueClass == Short.class || valueClass == Byte.class;
-            }
-            else if (parameterType == Long.TYPE) {
+            } else if (parameterType == Long.TYPE) {
                 return valueClass == Long.class || valueClass == Integer.class || valueClass == Character.class || valueClass == Short.class || valueClass == Byte.class;
-            }
-            else if (parameterType == Float.TYPE) {
+            } else if (parameterType == Float.TYPE) {
                 return valueClass == Float.class || valueClass == Long.class || valueClass == Integer.class || valueClass == Character.class || valueClass == Short.class || valueClass == Byte.class;
-            }
-            else if (parameterType == Double.TYPE) {
+            } else if (parameterType == Double.TYPE) {
                 return valueClass == Double.class || valueClass == Float.class || valueClass == Long.class || valueClass == Integer.class || valueClass == Character.class || valueClass == Short.class || valueClass == Byte.class;
-            }
-            else {
+            } else {
                 return false;
             }
-        }
-        else {
-            return value == null || parameterType.isAssignableFrom(value.getClass());
+        } else {
+            /**
+             * enabled output as the hashmap that will continue to set properties in hashmap
+             */
+            return value == null || value instanceof Map || parameterType.isAssignableFrom(value.getClass());
         }
     }
 
@@ -177,8 +184,7 @@ public class BeanUtil {
     private static boolean isSimpleObjectClass(Class<?> objectClass) {
         if (objectClass.isArray()) {
             return isSimpleObjectClass(objectClass.getComponentType());
-        }
-        else {
+        } else {
             return objectClass.isPrimitive() ||
                     CharSequence.class.isAssignableFrom(objectClass) ||
                     Character.class.isAssignableFrom(objectClass) ||
@@ -190,8 +196,7 @@ public class BeanUtil {
     private static Object convertObject(Object object, boolean includeSuperClasses) {
         if (isSimpleObject(object)) {
             return object;
-        }
-        else {
+        } else {
             return getProperties(object, includeSuperClasses, true);
         }
     }
