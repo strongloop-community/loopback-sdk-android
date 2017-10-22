@@ -16,6 +16,7 @@ public class UserTest extends AsyncTestCase {
     static final private String uid = String.valueOf(new java.util.Date().getTime());
     static final private String userEmail = uid + "@test.com";
     static final private String userPassword = "testpassword";
+    static final private String newUserPassword = "newtestpassword";
 
     /**
      * Custom sub-class of User.
@@ -138,6 +139,57 @@ public class UserTest extends AsyncTestCase {
                 CustomerRepository.class);
 
         assertEquals(customer.getId(), anotherRepo.getCurrentUserId());
+    }
+
+    public void testLoginAndChangeCurrentUserPassword() throws Throwable {
+        final Customer user = givenCustomer();
+
+        doAsyncTest(new AsyncTest() {
+
+            @Override
+            public void run() {
+
+                customerRepo.loginUser(user.getEmail(), userPassword,
+                        new CustomerRepository.LoginCallback() {
+
+                            @Override
+                            public void onError(Throwable t) {
+                                notifyFailed(t);
+                            }
+
+                            @Override
+                            public void onSuccess(AccessToken token, Customer currentUser) {
+                                assertNotNull("accessToken should be not null", token);
+                                assertEquals("userId", token.getUserId(), currentUser.getId());
+                                Log.i("UserTest", "login id: " + currentUser.getId());
+                                notifyFinished();
+                            }
+                        });
+            }
+
+        });
+
+        // Change user's password
+        doAsyncTest(new AsyncTest() {
+
+            @Override
+            public void run() {
+                customerRepo.changePassword(userPassword, newUserPassword, new VoidTestCallback(){
+                    @Override
+                    public void onSuccess() {
+                        Log.i("UserTest", "Password Changed");
+                        notifyFinished();
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        Log.i("UserTest", "Password Change Failed");
+                        notifyFailed(t);
+                    }
+                });
+            }
+
+        });
     }
 
     public void testFindCurrentUserReturnsCorrectValue() throws Throwable {
