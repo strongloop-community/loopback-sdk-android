@@ -192,6 +192,8 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
                 className + ".login");
         contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/logout", "POST"),
                 className + ".logout");
+        contract.addItem(new RestContractItem("/" + getNameForRestUrl() + "/change-password", "POST"),
+                className + ".change-password");
         return contract;
     }
 
@@ -250,6 +252,35 @@ public class UserRepository<U extends User> extends ModelRepository<U> {
                         setCurrentUserId(token.getUserId());
                         cachedCurrentUser = user;
                         callback.onSuccess(token, user);
+                    }
+                });
+    }
+
+    /**
+     * Change the current user's password
+     * <p>
+     * @param oldPassword The current password.
+     * @param newPassword The new Password.
+     * @param callback The callback to be executed when finished.
+     */
+    public void changePassword(String oldPassword, String newPassword,
+                               final VoidCallback callback) {
+
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("oldPassword",  oldPassword);
+        params.put("newPassword",  newPassword);
+
+        invokeStaticMethod("change-password", params,
+                new Adapter.Callback() {
+
+                    @Override
+                    public void onError(Throwable t) {
+                        callback.onError(t);
+                    }
+
+                    @Override
+                    public void onSuccess(String response) {
+                        callback.onSuccess();
                     }
                 });
     }
