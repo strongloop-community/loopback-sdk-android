@@ -230,13 +230,14 @@ public class RestAdapter extends Adapter {
                 String message;
                 if (error != null) {
                     message = error.toString();
-                } else {
-                    message = statusCode + "\n";
-                    try {
-                        message += new String(responseBody, getCharset());
-                    } catch (UnsupportedEncodingException e) {
-                        message += new String(responseBody);
-                    }
+                    Log.w(TAG, "HTTP request (string) failed: " + message);
+                }
+
+                message = statusCode + "\n";
+                try {
+                    message += new String(responseBody, getCharset());
+                } catch (UnsupportedEncodingException e) {
+                    message += new String(responseBody);
                 }
                 Log.w(TAG, "HTTP request (string) failed: " + message);
             }
@@ -248,7 +249,7 @@ public class RestAdapter extends Adapter {
         private final BinaryCallback callback;
 
         public BinaryHandler(BinaryCallback callback) {
-            super(new String[]{ ".*" });
+            super(new String[]{".*"});
             this.callback = callback;
         }
 
@@ -261,14 +262,15 @@ public class RestAdapter extends Adapter {
                 String message;
                 if (error != null) {
                     message = error.toString();
-                } else {
-                    message = statusCode + "\n";
-                    try {
-                        message += new String(responseBody, getCharset());
-                    } catch (UnsupportedEncodingException e) {
-                        message += new String(responseBody);
-                    }
+                    Log.w(TAG, "HTTP request (binary) failed: " + message);
                 }
+                message = statusCode + "\n";
+                try {
+                    message += new String(responseBody, getCharset());
+                } catch (UnsupportedEncodingException e) {
+                    message += new String(responseBody);
+                }
+
                 Log.w(TAG, "HTTP request (binary) failed: " + message);
             }
             callback.onError(error);
@@ -280,7 +282,7 @@ public class RestAdapter extends Adapter {
                 Log.d(TAG, "Success (binary): " + binaryData.length + " bytes");
             try {
                 String contentType = null;
-                for (Header h: headers) {
+                for (Header h : headers) {
                     if (h.getName().equalsIgnoreCase("content-type"))
                         contentType = h.getValue();
                 }
@@ -339,7 +341,7 @@ public class RestAdapter extends Adapter {
         public RestHttpClient(Context context, String baseUrl) {
             if (baseUrl == null) {
                 throw new IllegalArgumentException(
-                		"The baseUrl cannot be null");
+                        "The baseUrl cannot be null");
             }
 
             this.context = context;

@@ -2,6 +2,8 @@
 
 package com.strongloop.android.loopback;
 
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,13 +14,15 @@ import com.strongloop.android.remoting.Repository;
 import com.strongloop.android.remoting.VirtualObject;
 import com.strongloop.android.remoting.adapters.Adapter;
 
+import java.lang.reflect.Field;
+
 /**
  * A local representative of a single model instance on the server. The data is
  * immediately accessible locally, but can be saved, destroyed, etc. from the
  * server easily.
  */
 public class Model extends VirtualObject {
-
+    private static final String TAG = "Model";
     /**
      * @deprecated Use {link VoidCallback} instead.
      */
@@ -84,9 +88,22 @@ public class Model extends VirtualObject {
      */
     public Map<String, ? extends Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
+        Field[] fs = this.getClass().getDeclaredFields();
+        for (Field field : fs) {
+            try {
+                if(Log.isLoggable(TAG,Log.ERROR)){
+                    Log.e(TAG, field.getName() + ":" + field.get(this));
+                }
+                overflow.put(field.getName(), field.get(this));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
         map.putAll(overflow);
         map.put("id", getId());
         map.putAll(super.toMap());
+
+
         return map;
     }
 
