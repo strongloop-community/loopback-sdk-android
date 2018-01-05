@@ -4,8 +4,7 @@ As a former StrongLoop Labs project, this SDK may lack usability, completeness, 
 
 Our recommendatios is to use [IBM Mobile First](https://www.ibm.com/mobile) platform or [Swagger codegen](https://github.com/swagger-api/swagger-codegen) instead of this SDK.
 
-We are looking for volunteers from our community to pick up the maintenance of this project, see https://github.com/strongloop-community/loopback-sdk-ios/issues/136
-
+We are looking for volunteers from our community to pick up the maintenance of this project, see https://github.com/strongloop-community/loopback-sdk-android/issues/123
 ## Description
 
 The Android Java SDK provides simple API calls that enable your Android app to access a
